@@ -24,12 +24,13 @@ export const useMail = () => {
 
     // Generate a new random address
     const generateAccount = useCallback(async () => {
-        // Check daily limit from localStorage
+        // Check daily limit from localStorage (premium users bypass)
+        const premiumEmail = localStorage.getItem('premium_email');
         const today = new Date().toISOString().split('T')[0];
         const limitData = JSON.parse(localStorage.getItem('daily_limit') || '{}');
         const todayCount = limitData.date === today ? limitData.count : 0;
 
-        if (todayCount >= 3) {
+        if (!premiumEmail && todayCount >= 3) {
             setError('Daily limit reached (3 free emails/day). Upgrade to Premium for unlimited emails!');
             return;
         }

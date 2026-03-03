@@ -10,7 +10,7 @@ class SummarizeRequest(BaseModel):
 
 router = APIRouter()
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "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")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 FREE_DAILY_LIMIT = 3

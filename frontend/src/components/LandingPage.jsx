@@ -122,17 +122,38 @@ export default function LandingPage({ onGetStarted, loading, theme, toggleTheme 
                         </ul>
                         <button
                             onClick={async () => {
+                                const email = prompt('Enter your email:');
+                                if (!email) return;
+                                const password = prompt('Create a password (min 6 characters):');
+                                if (!password || password.length < 6) {
+                                    alert('Password must be at least 6 characters.');
+                                    return;
+                                }
                                 try {
-                                    const email = prompt('Enter your email for the premium subscription:');
-                                    if (!email) return;
-                                    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/payment/initialize`, {
+                                    const API = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+                                    // Try signup first
+                                    const signupRes = await fetch(`${API}/premium/signup`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ email, password }),
+                                    });
+                                    const signupData = await signupRes.json();
+                                    if (!signupRes.ok && signupData.detail !== 'Account already exists. Please log in.') {
+                                        alert(signupData.detail || 'Signup failed');
+                                        return;
+                                    }
+                                    // Initialize payment
+                                    const payRes = await fetch(`${API}/payment/initialize`, {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ email }),
                                     });
-                                    const data = await response.json();
-                                    if (data.authorization_url) {
-                                        window.location.href = data.authorization_url;
+                                    const payData = await payRes.json();
+                                    if (payData.authorization_url) {
+                                        localStorage.setItem('premium_email', email);
+                                        window.location.href = payData.authorization_url;
+                                    } else {
+                                        alert('Payment service is being set up. Please try again later.');
                                     }
                                 } catch (err) {
                                     alert('Payment service is being set up. Please try again later.');
@@ -140,7 +161,7 @@ export default function LandingPage({ onGetStarted, loading, theme, toggleTheme 
                             }}
                             className="w-full bg-primary hover:bg-primary/90 text-background font-bold py-3 rounded-lg transition-all hover:scale-[1.02] active:scale-[0.98] text-sm"
                         >
-                            Get Premium — ₦4,999/mo
+                            Get Premium — $4.99/mo
                         </button>
                     </div>
                 </div>
