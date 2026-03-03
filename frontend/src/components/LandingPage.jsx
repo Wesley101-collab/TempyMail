@@ -120,8 +120,27 @@ export default function LandingPage({ onGetStarted, loading, theme, toggleTheme 
                             <PricingItem included>Extended inbox (24h)</PricingItem>
                             <PricingItem included>Ad-free experience</PricingItem>
                         </ul>
-                        <button className="w-full bg-primary hover:bg-primary/90 text-background font-bold py-3 rounded-lg transition-all hover:scale-[1.02] active:scale-[0.98] text-sm">
-                            Coming Soon
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const email = prompt('Enter your email for the premium subscription:');
+                                    if (!email) return;
+                                    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/payment/initialize`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ email }),
+                                    });
+                                    const data = await response.json();
+                                    if (data.authorization_url) {
+                                        window.location.href = data.authorization_url;
+                                    }
+                                } catch (err) {
+                                    alert('Payment service is being set up. Please try again later.');
+                                }
+                            }}
+                            className="w-full bg-primary hover:bg-primary/90 text-background font-bold py-3 rounded-lg transition-all hover:scale-[1.02] active:scale-[0.98] text-sm"
+                        >
+                            Get Premium — ₦4,999/mo
                         </button>
                     </div>
                 </div>

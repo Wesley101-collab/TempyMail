@@ -1,69 +1,30 @@
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from services import mailbox
-import re
-import math
-from collections import Counter
+from services.database import get_connection
+import httpx
+import os
 
 class SummarizeRequest(BaseModel):
     text: str
 
 router = APIRouter()
 
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "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")
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
-# --- Local Extractive Summarizer ---
-def _split_sentences(text: str) -> list[str]:
-    """Split text into sentences."""
-    text = re.sub(r'\b(Mr|Mrs|Ms|Dr|Prof|Sr|Jr|vs|etc|inc|ltd)\.',
-                  lambda m: m.group().replace('.', '<DOT>'), text, flags=re.IGNORECASE)
-    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
-    return [s.replace('<DOT>', '.').strip() for s in sentences if len(s.strip()) > 10]
+FREE_DAILY_LIMIT = 3
 
 
-def _summarize_text(text: str, num_sentences: int = 3) -> str:
-    sentences = _split_sentences(text)
-    if len(sentences) <= num_sentences:
-        return text.strip()
-
-    stop_words = {
-        'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-        'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-        'should', 'may', 'might', 'shall', 'can', 'to', 'of', 'in', 'for',
-        'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through', 'during',
-        'before', 'after', 'above', 'below', 'between', 'and', 'but', 'or',
-        'nor', 'not', 'so', 'yet', 'both', 'either', 'neither', 'each',
-        'every', 'all', 'any', 'few', 'more', 'most', 'other', 'some',
-        'such', 'no', 'only', 'own', 'same', 'than', 'too', 'very',
-        'just', 'because', 'if', 'when', 'where', 'how', 'what', 'which',
-        'who', 'whom', 'this', 'that', 'these', 'those', 'it', 'its',
-        'he', 'she', 'they', 'we', 'you', 'i', 'me', 'him', 'her', 'us',
-        'them', 'my', 'your', 'his', 'our', 'their', 'up', 'out', 'about',
-    }
-
-    words = re.findall(r'[a-zA-Z]+', text.lower())
-    word_freq = Counter(w for w in words if w not in stop_words and len(w) > 2)
-
-    if not word_freq:
-        return sentences[0]
-
-    max_freq = max(word_freq.values())
-    word_freq = {w: f / max_freq for w, f in word_freq.items()}
-
-    scored = []
-    for idx, sentence in enumerate(sentences):
-        sent_words = re.findall(r'[a-zA-Z]+', sentence.lower())
-        if not sent_words:
-            scored.append((idx, 0))
-            continue
-        score = sum(word_freq.get(w, 0) for w in sent_words) / (math.log(len(sent_words) + 1) + 1)
-        if idx == 0:
-            score *= 1.2
-        scored.append((idx, score))
-
-    top = sorted(scored, key=lambda x: x[1], reverse=True)[:num_sentences]
-    top_indices = sorted([idx for idx, _ in top])
-    summary = ' '.join(sentences[i] for i in top_indices)
-    return summary
+def _count_accounts_today(ip: str) -> int:
+    """Count how many accounts were created today from this IP or in total."""
+    conn = get_connection()
+    cursor = conn.execute(
+        "SELECT COUNT(*) FROM analytics WHERE event = 'account_created' AND DATE(created_at) = DATE('now')"
+    )
+    count = cursor.fetchone()[0]
+    conn.close()
+    return count
 
 
 # --- Email Routes ---
@@ -72,7 +33,12 @@ def _summarize_text(text: str, num_sentences: int = 3) -> str:
 async def create_account():
     """Generates a new random email address on vredobox.cc."""
     try:
+        # Check daily limit (free tier = 3/day per browser, enforced loosely)
+        count = _count_accounts_today("")
+        # We track globally for now; per-user tracking needs cookies/IP
         data = mailbox.generate_address()
+        data["remaining_today"] = max(0, FREE_DAILY_LIMIT - (count + 1))
+        data["daily_limit"] = FREE_DAILY_LIMIT
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -113,20 +79,41 @@ async def delete_message(message_id: str):
 
 @router.post("/summarize")
 async def summarize_email(req: SummarizeRequest):
-    """Summarizes email text using local extractive summarization."""
+    """Summarizes email text using Groq AI (Llama 3)."""
     if not req.text or len(req.text.strip()) < 50:
         return {"summary": "Text is too short to summarize."}
 
     try:
-        clean_text = re.sub(r'<[^>]+>', ' ', req.text)
-        clean_text = re.sub(r'https?://\S+', '', clean_text)
-        clean_text = re.sub(r'\[https?://[^\]]*\]', '', clean_text)
-        clean_text = re.sub(r'\[.*?\]', '', clean_text)
-        clean_text = re.sub(r'\S+@\S+\.\S+', '', clean_text)
-        clean_text = re.sub(r'[\[\]]', '', clean_text)
-        clean_text = re.sub(r'\s+', ' ', clean_text).strip()
-
-        summary = _summarize_text(clean_text, num_sentences=3)
-        return {"summary": summary}
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                GROQ_API_URL,
+                headers={
+                    "Authorization": f"Bearer {GROQ_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": "llama-3.3-70b-versatile",
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": "You are a concise email summarizer. Summarize the email in 2-3 sentences. Focus on the key points, action items, and important details. Be clear and direct."
+                        },
+                        {
+                            "role": "user",
+                            "content": f"Summarize this email:\n\n{req.text[:3000]}"
+                        }
+                    ],
+                    "temperature": 0.3,
+                    "max_tokens": 200,
+                },
+            )
+            
+            if response.status_code != 200:
+                return {"summary": "AI service temporarily unavailable. Please try again."}
+            
+            data = response.json()
+            summary = data["choices"][0]["message"]["content"]
+            return {"summary": summary}
+            
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Summary error: {str(e)}")
+        return {"summary": f"Could not generate summary: {str(e)}"}

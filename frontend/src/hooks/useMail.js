@@ -24,12 +24,25 @@ export const useMail = () => {
 
     // Generate a new random address
     const generateAccount = useCallback(async () => {
+        // Check daily limit from localStorage
+        const today = new Date().toISOString().split('T')[0];
+        const limitData = JSON.parse(localStorage.getItem('daily_limit') || '{}');
+        const todayCount = limitData.date === today ? limitData.count : 0;
+
+        if (todayCount >= 3) {
+            setError('Daily limit reached (3 free emails/day). Upgrade to Premium for unlimited emails!');
+            return;
+        }
+
         setLoading(true);
         setError(null);
         try {
             const { data } = await api.post('/accounts');
             localStorage.setItem('mail_address', data.address);
             localStorage.setItem('mail_id', data.id);
+
+            // Update daily limit counter
+            localStorage.setItem('daily_limit', JSON.stringify({ date: today, count: todayCount + 1 }));
 
             // Save to history (keep last 5)
             const newHistoryItem = {
