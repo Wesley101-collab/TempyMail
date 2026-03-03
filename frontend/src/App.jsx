@@ -5,6 +5,7 @@ import Inbox from './components/Inbox';
 import MessageViewer from './components/MessageViewer';
 import LandingPage from './components/LandingPage';
 import AdminDashboard from './components/AdminDashboard';
+import PremiumAuth from './components/PremiumAuth';
 
 function App() {
   const {
@@ -26,7 +27,7 @@ function App() {
 
   const [showViewerOnMobile, setShowViewerOnMobile] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
-  const [page, setPage] = useState('landing'); // 'landing' | 'email' | 'admin'
+  const [page, setPage] = useState('landing'); // 'landing' | 'email' | 'admin' | 'premium'
   const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
@@ -37,10 +38,12 @@ function App() {
     }
   }, [theme]);
 
-  // Check URL for /admin route
+  // Check URL for /admin and /premium routes
   useEffect(() => {
     if (window.location.pathname === '/admin') {
       setPage('admin');
+    } else if (window.location.pathname === '/premium') {
+      setPage('premium');
     }
   }, []);
 
@@ -77,6 +80,19 @@ function App() {
   // Admin Dashboard
   if (page === 'admin') {
     return <AdminDashboard onBack={handleGoHome} theme={theme} />;
+  }
+
+  // Premium Auth
+  if (page === 'premium') {
+    return (
+      <PremiumAuth
+        onBack={handleGoHome}
+        onSuccess={(user) => {
+          setPage('landing');
+          window.history.pushState({}, '', '/');
+        }}
+      />
+    );
   }
 
   // Show landing page if no active session
