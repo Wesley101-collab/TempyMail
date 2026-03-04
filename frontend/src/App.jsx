@@ -36,13 +36,7 @@ function App() {
       setPage('premium');
     }
   }, []);
-  useEffect(() => {
-    if (window.location.pathname === '/admin') {
-      setPage('admin');
-    } else if (window.location.pathname === '/premium') {
-      setPage('premium');
-    }
-  }, []);
+
 
   const handleSelectMessage = async (id) => {
     setIsInitializing(true);
@@ -74,7 +68,7 @@ function App() {
 
   // Admin Dashboard
   if (page === 'admin') {
-    return <AdminDashboard onBack={handleGoHome} theme={theme} />;
+    return <AdminDashboard onBack={handleGoHome} />;
   }
 
   // Premium Auth
