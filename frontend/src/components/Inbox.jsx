@@ -5,16 +5,15 @@ import { Inbox as InboxIcon, RefreshCcw, Loader2 } from 'lucide-react';
 export default function Inbox({ messages, selectedId, onSelect, loading }) {
     return (
         <div className="h-full flex flex-col">
-            <div className="mb-4 flex items-center gap-2 text-textMain font-bold text-lg">
-                <InboxIcon className="w-5 h-5 text-primary" />
-                <h2>Inbox</h2>
-                <span className="bg-primary/10 text-primary text-xs px-2.5 py-0.5 rounded-full ml-1 font-bold">
-                    {messages.length}
-                </span>
-                {loading && <Loader2 className="w-4 h-4 text-primary animate-spin ml-2" />}
-            </div>
-
-            <div className="flex-1 dashboard-panel overflow-y-auto hide-scrollbar">
+            <div className="flex-1 dashboard-panel overflow-y-auto hide-scrollbar flex flex-col">
+                <div className="px-5 py-4 flex items-center gap-2 text-textMain font-bold text-lg border-b border-border sticky top-0 bg-surface z-10">
+                    <InboxIcon className="w-5 h-5 text-primary" />
+                    <h2>Inbox</h2>
+                    <span className="bg-primary/10 text-primary text-xs px-2.5 py-0.5 rounded-full ml-1 font-bold">
+                        {messages.length}
+                    </span>
+                    {loading && <Loader2 className="w-4 h-4 text-primary animate-spin ml-2" />}
+                </div>
                 {messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center p-12 text-center h-full">
                         <RefreshCcw className="w-10 h-10 mb-4 text-border animate-spin-slow" style={{ animationDuration: '3s' }} />
@@ -28,8 +27,8 @@ export default function Inbox({ messages, selectedId, onSelect, loading }) {
                                 key={msg.id}
                                 onClick={() => onSelect(msg.id)}
                                 className={`px-5 py-4 cursor-pointer transition-all ${selectedId === msg.id
-                                        ? 'bg-primary/5 border-l-4 border-l-primary'
-                                        : 'hover:bg-surfaceHover border-l-4 border-l-transparent'
+                                    ? 'bg-primary/5 border-l-4 border-l-primary'
+                                    : 'hover:bg-surfaceHover border-l-4 border-l-transparent'
                                     }`}
                             >
                                 <div className="flex items-center justify-between mb-1.5">
