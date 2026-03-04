@@ -121,6 +121,11 @@ function App() {
         onLogoClick={handleGoHome}
         history={history}
         recoverAccount={recoverAccount}
+        messages={messages}
+        onProfileClick={() => {
+          setPage('premium');
+          window.history.pushState({}, '', '/premium');
+        }}
       />
 
       {/* Main Content Area */}

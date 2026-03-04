@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Copy, RefreshCw, Check, Bell, Search, History, ChevronRight, User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
-export default function Header({ account, generateAccount, refreshInbox, onLogoClick, history = [], recoverAccount }) {
+export default function Header({ account, generateAccount, refreshInbox, onLogoClick, history = [], recoverAccount, messages = [], onProfileClick }) {
     const [copied, setCopied] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
 
@@ -126,16 +126,24 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                     )}
                 </div>
 
-                {/* Notifications Bell (from ref image) */}
-                <button className="btn-ghost p-2 relative">
+                {/* Notifications Bell */}
+                <button onClick={refreshInbox} className="btn-ghost p-2 relative" title="Refresh Inbox">
                     <Bell className="w-5 h-5" />
-                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-surface"></span>
+                    {messages.filter(m => !m.seen).length > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 rounded-full border-2 border-surface text-white text-[10px] font-bold flex items-center justify-center">
+                            {messages.filter(m => !m.seen).length}
+                        </span>
+                    )}
                 </button>
 
-                {/* User Avatar (from ref image) */}
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden border border-primary/30 ml-2">
+                {/* User Avatar */}
+                <button
+                    onClick={onProfileClick}
+                    className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden border border-primary/30 ml-2 hover:bg-primary/30 transition-colors cursor-pointer"
+                    title="Premium Account"
+                >
                     <User className="w-4 h-4" />
-                </div>
+                </button>
             </div>
         </header>
     );
