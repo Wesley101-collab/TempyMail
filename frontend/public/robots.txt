@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /premium
+
+Sitemap: https://tempymail.site/sitemap.xml

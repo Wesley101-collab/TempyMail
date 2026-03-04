@@ -148,3 +148,58 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+
+  .dashboard-panel,
+  .glass-panel {
+    border-radius: 0.75rem;
+  }
+
+  .dashboard-card,
+  .glass-card {
+    border-radius: 0.625rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  input,
+  textarea {
+    font-size: 16px !important;
+    /* Prevents iOS zoom on focus */
+  }
+
+  table {
+    font-size: 0.75rem;
+  }
+
+  h1 {
+    font-size: 1.75rem !important;
+  }
+}
+
+/* Touch targets */
+@media (pointer: coarse) {
+
+  button,
+  a,
+  input,
+  select {
+    min-height: 44px;
+  }
+}
+
+/* Safe area insets for modern phones */
+@supports (padding: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
