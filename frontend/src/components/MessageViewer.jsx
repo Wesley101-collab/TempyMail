@@ -33,11 +33,25 @@ export default function MessageViewer({ message, loading, onDelete, onBack }) {
     }, [message?.id]);
 
     const handleSummarize = async () => {
-        if (!message || !message.text) return;
+        if (!message) return;
+
+        // Get text content — either from text field or extract from HTML
+        let textContent = message.text;
+        if (!textContent && message.html && message.html.length > 0) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = Array.isArray(message.html) ? message.html[0] : message.html;
+            textContent = tempDiv.textContent || tempDiv.innerText || '';
+        }
+
+        if (!textContent || textContent.trim().length < 20) {
+            setSummaryError("Email content is too short to summarize.");
+            return;
+        }
+
         setSummarizing(true);
         setSummaryError(null);
         try {
-            const { data } = await api.post('/summarize', { text: message.text });
+            const { data } = await api.post('/summarize', { text: textContent });
             setSummary(data.summary);
         } catch (err) {
             setSummaryError("Failed to generate summary. The AI model might be unavailable right now.");
