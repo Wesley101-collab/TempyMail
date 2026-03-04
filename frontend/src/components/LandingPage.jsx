@@ -1,5 +1,8 @@
 import React from 'react';
-import { Mail, Shield, Zap, Sparkles, Check, X, RefreshCcw, ArrowRight } from 'lucide-react';
+import {
+    Mail, Shield, Zap, Sparkles, Check, X, RefreshCcw, ArrowRight,
+    AtSign, Forward, Reply, Paperclip, Webhook, Inbox, Download, Clock
+} from 'lucide-react';
 
 export default function LandingPage({ onGetStarted, loading }) {
     return (
@@ -11,11 +14,10 @@ export default function LandingPage({ onGetStarted, loading }) {
                     <div className="bg-primary p-1.5 rounded-lg">
                         <Mail className="w-5 h-5 text-white" />
                     </div>
-                    <h1 className="text-xl font-bold tracking-tight">
-                        TempyMail
-                    </h1>
+                    <h1 className="text-xl font-bold tracking-tight">TempyMail</h1>
                 </div>
                 <div className="flex items-center gap-4">
+                    <a href="#features" className="text-sm font-medium text-textMuted hover:text-textMain transition-colors hidden sm:block">Features</a>
                     <a href="#pricing" className="text-sm font-medium text-textMuted hover:text-textMain transition-colors hidden sm:block">Pricing</a>
                     <button
                         onClick={() => { window.history.pushState({}, '', '/premium'); window.location.reload(); }}
@@ -39,7 +41,7 @@ export default function LandingPage({ onGetStarted, loading }) {
 
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 text-primary text-sm font-bold mb-8 border border-green-200">
                         <Sparkles className="w-4 h-4" />
-                        <span>Now with AI Summaries</span>
+                        <span>Now with AI Summaries, Forwarding & Reply</span>
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight leading-tight text-gray-900">
@@ -48,7 +50,7 @@ export default function LandingPage({ onGetStarted, loading }) {
                     </h1>
 
                     <p className="text-textMuted text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
-                        Keep your real inbox clean and secure. Generate a disposable email address in one click to block spam, tracking, and unwanted newsletters.
+                        Keep your real inbox clean and secure. Generate a disposable email address in one click — with custom aliases, forwarding, attachments, and reply support.
                     </p>
 
                     <button
@@ -97,15 +99,36 @@ export default function LandingPage({ onGetStarted, loading }) {
                 </div>
             </section>
 
+            {/* Premium Features Grid */}
+            <section className="w-full bg-surface border-y border-border py-24" id="features">
+                <div className="max-w-5xl mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-900">Premium Superpowers</h2>
+                        <p className="text-textMuted text-lg max-w-2xl mx-auto">Everything you need for complete disposable email control.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                        <FeatureCard icon={AtSign} color="blue" title="Custom Aliases" desc="Choose your own username like myname@vredobox.cc" />
+                        <FeatureCard icon={Inbox} color="green" title="Multiple Inboxes" desc="Run up to 5 inboxes simultaneously" />
+                        <FeatureCard icon={Forward} color="purple" title="Email Forwarding" desc="Auto-forward incoming mail to your real inbox" />
+                        <FeatureCard icon={Reply} color="orange" title="Reply to Emails" desc="Send replies directly from your temp address" />
+                        <FeatureCard icon={Paperclip} color="pink" title="Attachments" desc="View and download email attachments" />
+                        <FeatureCard icon={Download} color="teal" title="Download Emails" desc="Export individual .eml or full inbox as .zip" />
+                        <FeatureCard icon={Clock} color="amber" title="7-Day Retention" desc="Emails last 7 days instead of 1 hour" />
+                        <FeatureCard icon={Webhook} color="indigo" title="Webhook Alerts" desc="Get HTTP notifications for new emails" />
+                    </div>
+                </div>
+            </section>
+
             {/* Pricing Section */}
-            <section className="w-full bg-surface border-y border-border py-24" id="pricing">
+            <section className="w-full bg-background py-24" id="pricing">
                 <div className="max-w-5xl mx-auto px-6">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-900">Simple, transparent pricing</h2>
-                        <p className="text-textMuted text-lg max-w-2xl mx-auto">Start with our free plan to protect your inbox immediately. Upgrade for advanced features and permanent routing.</p>
+                        <p className="text-textMuted text-lg max-w-2xl mx-auto">Start free. Upgrade when you need more power.</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto pl-4 pr-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto px-4">
                         {/* Free Plan */}
                         <div className="dashboard-card p-8 flex flex-col">
                             <h3 className="text-xl font-bold text-gray-900 mb-2">Free Plan</h3>
@@ -117,12 +140,15 @@ export default function LandingPage({ onGetStarted, loading }) {
 
                             <ul className="space-y-4 mb-8 flex-1">
                                 <PricingItem included>3 temporary emails per day</PricingItem>
-                                <PricingItem included>AI email summarizer (10/day)</PricingItem>
+                                <PricingItem included>AI email summarizer</PricingItem>
+                                <PricingItem included>1-hour inbox lifetime</PricingItem>
                                 <PricingItem included>Download individual emails</PricingItem>
                                 <PricingItem included>Browser session history</PricingItem>
-                                <PricingItem>Custom persistent aliases</PricingItem>
-                                <PricingItem>Extended inbox lifetime (24h)</PricingItem>
-                                <PricingItem>Ad-free experience</PricingItem>
+                                <PricingItem>Custom aliases</PricingItem>
+                                <PricingItem>Multiple inboxes</PricingItem>
+                                <PricingItem>Email forwarding & reply</PricingItem>
+                                <PricingItem>Attachment support</PricingItem>
+                                <PricingItem>Webhook notifications</PricingItem>
                             </ul>
                             <button
                                 onClick={onGetStarted}
@@ -148,11 +174,14 @@ export default function LandingPage({ onGetStarted, loading }) {
                             <ul className="space-y-4 mb-8 flex-1">
                                 <PricingItem included>Unlimited temporary emails</PricingItem>
                                 <PricingItem included>Unlimited AI summaries</PricingItem>
-                                <PricingItem included>Download entire inboxes</PricingItem>
-                                <PricingItem included>Cloud session history</PricingItem>
+                                <PricingItem included>7-day inbox lifetime</PricingItem>
+                                <PricingItem included>Download full inboxes (.zip)</PricingItem>
                                 <PricingItem included>Custom persistent aliases</PricingItem>
-                                <PricingItem included>Extended inbox lifetime (24h)</PricingItem>
-                                <PricingItem included>Ad-free experience</PricingItem>
+                                <PricingItem included>Up to 5 active inboxes</PricingItem>
+                                <PricingItem included>Email forwarding</PricingItem>
+                                <PricingItem included>Reply to emails</PricingItem>
+                                <PricingItem included>Attachment support</PricingItem>
+                                <PricingItem included>Webhook notifications</PricingItem>
                             </ul>
                             <button
                                 onClick={() => { window.history.pushState({}, '', '/premium'); window.location.reload(); }}
@@ -179,6 +208,28 @@ export default function LandingPage({ onGetStarted, loading }) {
                     </p>
                 </div>
             </footer>
+        </div>
+    );
+}
+
+function FeatureCard({ icon: Icon, color, title, desc }) {
+    const colors = {
+        blue: 'bg-blue-50 text-blue-500 border-blue-100',
+        green: 'bg-green-50 text-green-600 border-green-100',
+        purple: 'bg-purple-50 text-purple-500 border-purple-100',
+        orange: 'bg-orange-50 text-orange-500 border-orange-100',
+        pink: 'bg-pink-50 text-pink-500 border-pink-100',
+        teal: 'bg-teal-50 text-teal-600 border-teal-100',
+        amber: 'bg-amber-50 text-amber-600 border-amber-100',
+        indigo: 'bg-indigo-50 text-indigo-500 border-indigo-100',
+    };
+    return (
+        <div className="dashboard-card p-6 group hover:shadow-md transition-shadow text-center">
+            <div className={`w-11 h-11 ${colors[color]} rounded-xl flex items-center justify-center mb-4 border mx-auto group-hover:scale-110 transition-transform`}>
+                <Icon className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-gray-900 mb-1 text-sm">{title}</h3>
+            <p className="text-textMuted text-xs leading-relaxed">{desc}</p>
         </div>
     );
 }
