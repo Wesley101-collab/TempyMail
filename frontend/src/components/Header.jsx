@@ -55,10 +55,10 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                 {/* Change Email */}
                 <button
                     onClick={generateAccount}
-                    className="hidden sm:flex btn-ghost text-sm px-3 py-2 gap-2"
+                    className="hidden sm:flex btn-ghost text-sm px-3 py-2 gap-1.5 font-semibold"
                 >
                     <RefreshCw className="w-4 h-4" />
-                    <span className="hidden lg:inline">{t('changeEmail')}</span>
+                    <span>{t('changeEmail')}</span>
                 </button>
 
                 {/* Dark Mode Toggle */}
@@ -74,10 +74,10 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                 <div className="relative">
                     <button
                         onClick={() => setShowLangMenu(!showLangMenu)}
-                        className={`btn-ghost p-2 transition-colors ${showLangMenu ? 'bg-surfaceHover text-primary' : ''}`}
-                        title={t('language')}
+                        className={`btn-ghost px-3 py-2 text-sm font-semibold gap-1.5 transition-colors ${showLangMenu ? 'bg-surfaceHover text-primary' : ''}`}
                     >
-                        <Globe className="w-5 h-5" />
+                        <span>{LANGUAGES.find(l => l.code === lang)?.flag}</span>
+                        <span className="hidden sm:inline">{t('language')}</span>
                     </button>
 
                     {showLangMenu && (
@@ -106,10 +106,10 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                 <div className="relative hidden sm:block">
                     <button
                         onClick={() => setShowHistory(!showHistory)}
-                        className={`btn-ghost p-2 transition-colors ${showHistory ? 'bg-surfaceHover text-primary' : ''}`}
-                        title={t('sessionHistory')}
+                        className={`btn-ghost px-3 py-2 text-sm font-semibold gap-1.5 transition-colors ${showHistory ? 'bg-surfaceHover text-primary' : ''}`}
                     >
-                        <History className="w-5 h-5" />
+                        <History className="w-4 h-4" />
+                        <span className="hidden lg:inline">{t('sessionHistory')}</span>
                     </button>
 
                     {showHistory && (
@@ -164,16 +164,16 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                     )}
                 </div>
 
-                {/* Notifications Bell */}
+                {/* Notifications */}
                 <button
                     onClick={() => {
                         refreshInbox();
                         if (markAllAsSeen) markAllAsSeen();
                     }}
-                    className="btn-ghost p-2 relative"
-                    title={t('refreshNotif')}
+                    className="btn-ghost px-3 py-2 text-sm font-semibold gap-1.5 relative"
                 >
-                    <Bell className="w-5 h-5" />
+                    <Bell className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t('refreshNotif').split(' ')[0]}</span>
                     {messages.filter(m => !m.seen).length > 0 && (
                         <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 rounded-full border-2 border-surface text-white text-[10px] font-bold flex items-center justify-center">
                             {messages.filter(m => !m.seen).length}
@@ -184,10 +184,10 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                 {/* User Avatar */}
                 <button
                     onClick={onProfileClick}
-                    className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden border border-primary/30 hover:bg-primary/30 transition-colors cursor-pointer"
-                    title={t('premiumAccount')}
+                    className="btn-ghost px-3 py-2 text-sm font-semibold gap-1.5"
                 >
                     <User className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t('premiumAccount')}</span>
                 </button>
             </div>
         </header>
