@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Header, HTTPException
 from services.database import get_connection
 from typing import Optional
+import os
 
 router = APIRouter()
 
-# Simple admin key — change this to something secure before deploying!
-ADMIN_KEY = "tempymail-admin-secret-2026"
+ADMIN_KEY = os.getenv("ADMIN_KEY", "")
 
 
 def verify_admin(x_admin_key: Optional[str] = Header(None)):

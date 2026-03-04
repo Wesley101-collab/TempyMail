@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from services.database import get_connection
 import httpx
-import hashlib
+import bcrypt
 import os
 
 router = APIRouter()
@@ -27,7 +27,13 @@ class PaymentInitRequest(BaseModel):
 
 
 def _hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode()).hexdigest()
+    """Hash a password with bcrypt (automatic salt)."""
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+
+def _verify_password(password: str, hashed: str) -> bool:
+    """Verify a password against a bcrypt hash."""
+    return bcrypt.checkpw(password.encode(), hashed.encode())
 
 
 # --- Auth Routes ---
@@ -61,12 +67,12 @@ async def premium_login(req: LoginRequest):
     """Log in a premium user."""
     conn = get_connection()
     user = conn.execute(
-        "SELECT id, email, is_active, created_at FROM premium_users WHERE email = ? AND password_hash = ?",
-        (req.email.lower(), _hash_password(req.password))
+        "SELECT id, email, password_hash, is_active, created_at FROM premium_users WHERE email = ?",
+        (req.email.lower(),)
     ).fetchone()
     conn.close()
 
-    if not user:
+    if not user or not _verify_password(req.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     return {

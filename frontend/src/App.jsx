@@ -28,16 +28,6 @@ function App() {
   const [showViewerOnMobile, setShowViewerOnMobile] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [page, setPage] = useState('landing'); // 'landing' | 'email' | 'admin' | 'premium'
-  const [theme, setTheme] = useState('dark');
-
-  useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
-
   // Check URL for /admin and /premium routes
   useEffect(() => {
     if (window.location.pathname === '/admin') {
@@ -46,8 +36,13 @@ function App() {
       setPage('premium');
     }
   }, []);
-
-  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
+  useEffect(() => {
+    if (window.location.pathname === '/admin') {
+      setPage('admin');
+    } else if (window.location.pathname === '/premium') {
+      setPage('premium');
+    }
+  }, []);
 
   const handleSelectMessage = async (id) => {
     setIsInitializing(true);
@@ -101,8 +96,6 @@ function App() {
       <LandingPage
         onGetStarted={handleGetStarted}
         loading={mailLoading}
-        theme={theme}
-        toggleTheme={toggleTheme}
       />
     );
   }
@@ -125,20 +118,20 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen app-bg p-4 md:p-6 lg:p-10 flex flex-col overflow-hidden">
-      <div className="max-w-[1400px] mx-auto w-full flex-1 flex flex-col h-full relative z-10">
-        <Header
-          account={account}
-          generateAccount={generateAccount}
-          refreshInbox={refreshInbox}
-          onLogoClick={handleGoHome}
-          theme={theme}
-          toggleTheme={toggleTheme}
-          history={history}
-          recoverAccount={recoverAccount}
-        />
+    <div className="min-h-screen app-bg flex flex-col overflow-hidden text-textMain">
+      {/* Top Header/Navbar */}
+      <Header
+        account={account}
+        generateAccount={generateAccount}
+        refreshInbox={refreshInbox}
+        onLogoClick={handleGoHome}
+        history={history}
+        recoverAccount={recoverAccount}
+      />
 
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[600px] h-[calc(100vh-160px)] relative">
+      {/* Main Content Area */}
+      <main className="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-6 lg:p-10 relative z-10 flex flex-col h-full">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[600px] h-[calc(100vh-160px)] relative">
           {/* Inbox List */}
           <div className={`lg:col-span-4 xl:col-span-3 h-full ${showViewerOnMobile ? 'hidden lg:block' : 'block'}`}>
             <Inbox
@@ -162,7 +155,7 @@ function App() {
             />
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

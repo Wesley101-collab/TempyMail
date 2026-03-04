@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Mail, Copy, RefreshCw, Check, RotateCcw, Sun, Moon, History, ChevronRight } from 'lucide-react';
+import { Mail, Copy, RefreshCw, Check, Bell, Search, History, ChevronRight, User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
-export default function Header({ account, generateAccount, refreshInbox, onLogoClick, theme, toggleTheme, history = [], recoverAccount }) {
+export default function Header({ account, generateAccount, refreshInbox, onLogoClick, history = [], recoverAccount }) {
     const [copied, setCopied] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
 
@@ -15,66 +15,60 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
     };
 
     return (
-        <header className="glass-panel w-full p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-6">
-                <button onClick={onLogoClick} className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
-                    <div className="p-2 bg-primary/20 rounded-xl shadow-[0_0_15px_rgba(102,252,241,0.2)]">
-                        <Mail className="w-8 h-8 text-primary" />
-                    </div>
-                    <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary text-glow">
-                        TempyMail
-                    </h1>
-                </button>
+        <header className="bg-surface border-b border-border px-6 py-3 flex items-center justify-between sticky top-0 z-50">
+            {/* Left: Logo */}
+            <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={onLogoClick}>
+                <div className="bg-primary p-1.5 rounded-lg">
+                    <Mail className="w-5 h-5 text-white" />
+                </div>
+                <h1 className="text-xl font-bold text-textMain tracking-tight">
+                    TempyMail
+                </h1>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-                {/* Email display + copy */}
-                <div className="glass-card px-4 py-3 flex items-center justify-between min-w-[300px] w-full sm:w-auto">
-                    <span className="text-text-main font-mono font-medium truncate mr-4">
+            {/* Middle: Search bar (Used to display current email in this app context) */}
+            <div className="hidden md:flex flex-1 max-w-lg mx-6">
+                <div className="relative w-full flex items-center">
+                    <div className="absolute left-3 text-textMuted">
+                        <Search className="w-4 h-4" />
+                    </div>
+                    <div className="w-full bg-surfaceHover border border-border rounded-lg py-2 pl-10 pr-12 text-sm text-textMain font-mono font-medium truncate">
                         {account?.address || 'Generating address...'}
-                    </span>
+                    </div>
                     <button
                         onClick={handleCopy}
-                        className="text-text-muted hover:text-primary transition-colors focus:outline-none"
+                        className="absolute right-2 p-1.5 text-textMuted hover:text-primary bg-surfaceHover hover:bg-surface rounded-md transition-colors"
                         title="Copy Email"
                     >
-                        {copied ? <Check className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5" />}
+                        {copied ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
                     </button>
                 </div>
+            </div>
 
-                {/* Refresh Inbox button */}
+            {/* Right: Actions & User */}
+            <div className="flex items-center gap-3 lg:gap-4">
+                {/* Mobile Copy Button (since search bar is hidden) */}
                 <button
-                    onClick={refreshInbox}
-                    className="glass-button px-5 py-3 w-full sm:w-auto font-semibold gap-2"
-                    title="Refresh Inbox"
+                    onClick={handleCopy}
+                    className="md:hidden btn-ghost p-2"
+                    title="Copy Email"
                 >
-                    <RotateCcw className="w-5 h-5" />
-                    <span>Refresh</span>
+                    {copied ? <Check className="w-5 h-5 text-primary" /> : <Copy className="w-5 h-5" />}
                 </button>
 
-                {/* Change Email button */}
                 <button
                     onClick={generateAccount}
-                    className="bg-primary/10 hover:bg-primary/20 text-text-main border border-primary/20 transition-all duration-300 rounded-lg px-5 py-3 w-full sm:w-auto font-semibold gap-2 flex items-center justify-center hover:shadow-[0_0_10px_rgba(102,252,241,0.1)] active:scale-95"
+                    className="hidden sm:flex btn-ghost text-sm px-3 py-2 gap-2"
                 >
-                    <RefreshCw className="w-5 h-5" />
-                    <span>Change Email</span>
-                </button>
-
-                {/* Theme Toggle button */}
-                <button
-                    onClick={toggleTheme}
-                    className="glass-button p-3 aspect-square sm:w-auto font-semibold"
-                    title="Toggle Theme"
-                >
-                    {theme === 'dark' ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-slate-700" />}
+                    <RefreshCw className="w-4 h-4" />
+                    <span className="hidden lg:inline">Change Email</span>
                 </button>
 
                 {/* History Dropdown */}
                 <div className="relative">
                     <button
                         onClick={() => setShowHistory(!showHistory)}
-                        className={`glass-button p-3 aspect-square sm:w-auto font-semibold transition-all ${showHistory ? 'bg-primary/20 border-primary/40 text-primary shadow-[0_0_15px_rgba(102,252,241,0.2)]' : ''}`}
+                        className={`btn-ghost p-2 transition-colors ${showHistory ? 'bg-surfaceHover text-primary' : ''}`}
                         title="Session History"
                     >
                         <History className="w-5 h-5" />
@@ -82,20 +76,17 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
 
                     {showHistory && (
                         <>
-                            {/* Backdrop */}
                             <div className="fixed inset-0 z-40" onClick={() => setShowHistory(false)}></div>
-
-                            {/* Dropdown Menu */}
-                            <div className="absolute right-0 top-full mt-2 w-80 glass-panel border border-white/10 shadow-2xl z-50 overflow-hidden transform origin-top-right animate-in fade-in slide-in-from-top-2">
-                                <div className="p-4 border-b border-white/10 bg-surface/50">
-                                    <h3 className="font-bold text-text-main flex items-center gap-2">
+                            <div className="absolute right-0 top-full mt-2 w-80 dashboard-panel shadow-lg z-50 overflow-hidden text-left origin-top-right">
+                                <div className="p-4 border-b border-border bg-surfaceHover/50">
+                                    <h3 className="font-bold text-textMain flex items-center gap-2 text-sm">
                                         <History className="w-4 h-4 text-primary" /> Recent Inboxes
                                     </h3>
-                                    <p className="text-xs text-text-muted mt-1 leading-relaxed">Recover up to 5 previously generated email sessions within the last 24 hours.</p>
+                                    <p className="text-xs text-textMuted mt-1">Recover past sessions within 24h.</p>
                                 </div>
                                 <div className="max-h-64 overflow-y-auto hide-scrollbar p-2">
                                     {history.length === 0 ? (
-                                        <div className="p-4 text-center text-text-muted text-sm">
+                                        <div className="p-4 text-center text-textMuted text-sm">
                                             No recent inboxes found.
                                         </div>
                                     ) : (
@@ -111,20 +102,20 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                                                         }
                                                     }}
                                                     disabled={isActive}
-                                                    className={`w-full text-left p-3 rounded-xl mb-1 flex items-center justify-between transition-all ${isActive
+                                                    className={`w-full text-left p-3 rounded-lg flex items-center justify-between transition-colors ${isActive
                                                         ? 'bg-primary/10 border border-primary/20 cursor-default'
-                                                        : 'hover:bg-surface border border-transparent hover:border-white/5 group'
+                                                        : 'hover:bg-surfaceHover border border-transparent'
                                                         }`}
                                                 >
-                                                    <div className="overflow-hidden pr-3">
-                                                        <p className={`font-mono font-bold text-sm truncate ${isActive ? 'text-primary' : 'text-text-main group-hover:text-primary transition-colors'}`}>
+                                                    <div className="overflow-hidden pr-2">
+                                                        <p className={`font-mono font-medium text-sm truncate ${isActive ? 'text-primary' : 'text-textMain'}`}>
                                                             {item.address}
                                                         </p>
-                                                        <p className="text-xs text-text-muted font-medium mt-1">
+                                                        <p className="text-xs text-textMuted mt-1">
                                                             {isActive ? 'Current Session' : formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
                                                         </p>
                                                     </div>
-                                                    {!isActive && <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-primary transition-colors flex-shrink-0" />}
+                                                    {!isActive && <ChevronRight className="w-4 h-4 text-textMuted" />}
                                                 </button>
                                             )
                                         })
@@ -133,6 +124,17 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                             </div>
                         </>
                     )}
+                </div>
+
+                {/* Notifications Bell (from ref image) */}
+                <button className="btn-ghost p-2 relative">
+                    <Bell className="w-5 h-5" />
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-surface"></span>
+                </button>
+
+                {/* User Avatar (from ref image) */}
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden border border-primary/30 ml-2">
+                    <User className="w-4 h-4" />
                 </div>
             </div>
         </header>

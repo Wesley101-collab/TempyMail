@@ -31,22 +31,22 @@ export default function MessageViewer({ message, loading, onDelete, onBack }) {
 
     if (loading) {
         return (
-            <div className="glass-panel h-full flex flex-col items-center justify-center p-8 bg-surface/30">
-                <Loader2 className="w-12 h-12 text-primary animate-spin mb-5 shadow-[0_0_15px_rgba(102,252,241,0.5)] rounded-full" />
-                <p className="text-primary text-lg font-medium tracking-wide">Decrypting message...</p>
+            <div className="dashboard-panel h-full flex flex-col items-center justify-center p-8 bg-surface/50">
+                <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+                <p className="text-textMain font-medium">Decrypting message...</p>
             </div>
         );
     }
 
     if (!message) {
         return (
-            <div className="glass-panel h-full flex flex-col items-center justify-center p-8 text-center bg-surface/20">
-                <div className="p-8 rounded-full mb-6 glass-card shadow-[0_0_30px_rgba(69,162,158,0.15)] bg-surface/50 border-white/5">
-                    <MailOpen className="w-20 h-20 text-secondary opacity-80" />
+            <div className="dashboard-panel h-full flex flex-col items-center justify-center p-8 text-center bg-surface/50 border-dashed border-2">
+                <div className="p-6 rounded-full mb-6 bg-surfaceHover border border-border">
+                    <MailOpen className="w-12 h-12 text-textMuted" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3 text-text-main tracking-tight">Select a Message</h3>
-                <p className="text-text-muted max-w-sm text-lg leading-relaxed mix-blend-screen">
-                    Choose an email from your inbox to view its encrypted contents here in real-time.
+                <h3 className="text-xl font-bold mb-2 text-textMain tracking-tight">Select a Message</h3>
+                <p className="text-textMuted max-w-sm text-sm">
+                    Choose an email from your inbox to view its contents here.
                 </p>
             </div>
         );
@@ -80,99 +80,111 @@ export default function MessageViewer({ message, loading, onDelete, onBack }) {
     };
 
     return (
-        <div className="glass-panel h-full flex flex-col overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-white/10 bg-surface-hover flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5">
+        <div className="dashboard-panel h-full flex flex-col overflow-hidden">
+            {/* Header section */}
+            <div className="p-6 border-b border-border bg-surface flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5">
                 <div className="flex-1 w-full relative">
-                    <div className="flex items-center gap-3 mb-3 lg:hidden">
-                        <button onClick={onBack} className="text-text-muted hover:text-primary transition-all flex items-center gap-1.5 text-sm font-semibold bg-surface px-4 py-2 rounded-xl border border-white/10 shadow-lg active:scale-95">
+                    <div className="flex items-center gap-3 mb-4 lg:hidden">
+                        <button onClick={onBack} className="text-textMuted hover:text-textMain transition-colors flex items-center gap-1.5 text-sm font-semibold hover:bg-surfaceHover px-3 py-1.5 rounded-lg border border-border active:scale-95">
                             <ArrowLeft className="w-4 h-4" /> Back to Inbox
                         </button>
                     </div>
-                    <h2 className="text-3xl font-extrabold text-text-main mb-3 tracking-tight leading-snug drop-shadow-md">
-                        {message.subject || '(No Subject)'}
-                    </h2>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
+
+                    <div className="flex items-baseline justify-between mb-3">
+                        <h2 className="text-2xl font-bold text-textMain tracking-tight leading-snug">
+                            {message.subject || '(No Subject)'}
+                        </h2>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm mt-4">
                         <div className="flex items-center gap-2">
-                            <span className="text-text-muted font-medium tracking-wide">From:</span>
-                            <span className="font-bold text-primary bg-primary/10 px-3 py-1 rounded-md border border-primary/20 shadow-sm">
-                                {message.from.address}
-                            </span>
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                                {message.from.address.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <div className="font-semibold text-textMain">{message.from.name || message.from.address.split('@')[0]}</div>
+                                <div className="text-textMuted text-xs">{message.from.address}</div>
+                            </div>
                         </div>
-                        <span className="hidden sm:inline text-text-muted/50">•</span>
-                        <span className="text-text-muted font-medium flex items-center gap-2 bg-surface/80 px-3 py-1 rounded-md border border-white/5">
+
+                        <div className="hidden sm:block w-px h-8 bg-border mx-2"></div>
+
+                        <div className="text-textMuted font-medium text-xs bg-surfaceHover px-3 py-1.5 rounded-md border border-border">
                             {format(new Date(message.createdAt), 'MMM d, yyyy h:mm a')}
-                        </span>
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex gap-3 w-full sm:w-auto mt-4 sm:mt-0 justify-end">
+                <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0 justify-end self-start">
                     <button
                         onClick={handleSummarize}
                         disabled={summarizing}
-                        className="p-2.5 text-text-muted hover:text-purple-400 hover:bg-purple-400/20 rounded-xl transition-all border border-transparent hover:border-purple-400/30 shadow-sm tooltip active:scale-95 group flex items-center gap-2"
+                        className="btn-secondary px-3 py-2 text-primary hover:text-primary hover:border-primary border-transparent gap-2 active:scale-95 group text-sm"
                         title="Summarize with AI"
                     >
-                        {summarizing ? <Loader2 className="w-5 h-5 animate-spin text-purple-400" /> : <Sparkles className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform text-purple-400" />}
-                        <span className="hidden lg:inline font-bold text-sm text-purple-400 group-hover:text-purple-300">Summarize</span>
+                        {summarizing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                        <span className="font-semibold">AI Summary</span>
                     </button>
                     <button
                         onClick={handleDownloadEmail}
-                        className="p-2.5 text-text-muted hover:text-primary hover:bg-primary/20 rounded-xl transition-all border border-transparent hover:border-primary/30 shadow-sm tooltip active:scale-95 group"
+                        className="btn-ghost p-2 text-textMuted hover:text-textMain hover:bg-surfaceHover active:scale-95 group border border-transparent rounded-lg"
                         title="Download Email"
                     >
-                        <FileDown className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform text-primary" />
+                        <FileDown className="w-5 h-5" />
                     </button>
                     {message.hasAttachments && (
-                        <button className="p-2.5 text-text-muted hover:text-primary hover:bg-primary/20 rounded-xl transition-all border border-transparent hover:border-primary/30 shadow-sm tooltip active:scale-95" title="Has Attachments">
+                        <button className="btn-ghost p-2 text-textMuted hover:text-textMain hover:bg-surfaceHover active:scale-95 border border-transparent rounded-lg" title="Has Attachments">
                             <Download className="w-5 h-5" />
                         </button>
                     )}
                     <button
                         onClick={() => onDelete(message.id)}
-                        className="p-2.5 text-text-muted hover:text-red-400 hover:bg-red-400/20 rounded-xl transition-all border border-transparent hover:border-red-400/30 shadow-sm tooltip active:scale-95 group"
+                        className="btn-ghost p-2 text-textMuted hover:text-red-600 hover:bg-red-50 active:scale-95 group border border-transparent rounded-lg"
                         title="Delete Message"
                     >
-                        <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                        <Trash2 className="w-5 h-5" />
                     </button>
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 bg-[#fdfdfd] rounded-b-2xl shadow-inner relative" style={{ color: '#1a1a1a' }}>
+            <div className="flex-1 overflow-y-auto p-8 bg-surface rounded-b-2xl relative">
 
                 {/* AI Summary Banner */}
                 {(summary || summarizing || summaryError) && (
-                    <div className="mb-8 p-6 rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100 shadow-sm relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 to-indigo-500"></div>
+                    <div className="mb-8 p-6 rounded-xl bg-green-50/50 border border-green-200/50 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-primary"></div>
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="p-2 bg-purple-100 rounded-lg">
-                                <Sparkles className="w-5 h-5 text-purple-600" />
+                            <div className="p-1.5 bg-green-100 rounded-lg">
+                                <Sparkles className="w-5 h-5 text-primary" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900">AI Summary</h3>
+                            <h3 className="text-base font-bold text-gray-900">AI Summary</h3>
                         </div>
 
                         {summarizing ? (
-                            <div className="flex items-center gap-3 text-purple-600 font-medium py-2">
-                                <Loader2 className="w-5 h-5 animate-spin" />
+                            <div className="flex items-center gap-3 text-primary text-sm font-medium py-2">
+                                <Loader2 className="w-4 h-4 animate-spin" />
                                 <span>Generating AI summary... (This may take a few seconds)</span>
                             </div>
                         ) : summaryError ? (
-                            <p className="text-red-500 font-medium">{summaryError}</p>
+                            <p className="text-red-500 text-sm font-medium">{summaryError}</p>
                         ) : (
-                            <p className="text-gray-700 leading-relaxed font-medium">{summary}</p>
+                            <p className="text-gray-700 text-sm leading-relaxed">{summary}</p>
                         )}
                     </div>
                 )}
 
-                {message.html && message.html.length > 0 ? (
-                    <div
-                        className="prose prose-sm sm:prose-base max-w-none prose-a:text-blue-600 hover:prose-a:text-blue-800 prose-img:rounded-xl prose-img:shadow-md prose-headings:text-gray-900 prose-p:text-gray-800"
-                        dangerouslySetInnerHTML={{ __html: message.html[0] }}
-                    />
-                ) : (
-                    <pre className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed text-base bg-gray-50 p-6 rounded-xl border border-gray-100 shadow-sm">
-                        {message.text}
-                    </pre>
-                )}
+                <div className="max-w-4xl">
+                    {message.html && message.html.length > 0 ? (
+                        <div
+                            className="prose prose-sm sm:prose-base max-w-none prose-a:text-primary hover:prose-a:text-secondary prose-img:rounded-xl prose-img:border prose-img:border-border prose-headings:text-textMain prose-p:text-gray-700"
+                            dangerouslySetInnerHTML={{ __html: message.html[0] }}
+                        />
+                    ) : (
+                        <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed text-sm">
+                            {message.text}
+                        </pre>
+                    )}
+                </div>
             </div>
         </div>
     );

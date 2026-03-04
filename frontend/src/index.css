@@ -14,29 +14,16 @@
 }
 
 :root {
-  --bg-main: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-surface-hover: #f1f5f9;
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --primary-dim: rgba(15, 23, 42, 0.05);
-  --secondary-dim: rgba(51, 65, 85, 0.05);
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
-}
-
-.dark {
-  --bg-main: #0f172a;
-  --bg-surface: #1e293b;
-  --bg-surface-hover: #334155;
-  --text-primary: #38bdf8;
-  --text-secondary: #818cf8;
-  --primary-dim: rgba(56, 189, 248, 0.1);
-  --secondary-dim: rgba(129, 140, 248, 0.1);
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --border-color: #334155;
+  --bg-main: #FAFAFA;
+  --bg-surface: #FFFFFF;
+  --bg-surface-hover: #F3F4F6;
+  --text-primary: #22C55E;
+  --text-secondary: #16A34A;
+  --primary-dim: rgba(34, 197, 94, 0.1);
+  --secondary-dim: rgba(22, 163, 74, 0.1);
+  --text-main: #111827;
+  --text-muted: #6B7280;
+  --border-color: #E5E7EB;
 }
 
 body {
@@ -55,30 +42,58 @@ body {
   color: var(--text-primary);
 }
 
-/* Minimal Utilities instead of Glass */
-.glass-panel {
+/* Clean Dashboard Utilities */
+.glass-panel,
+.dashboard-panel {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 }
 
-.glass-card {
+.glass-card,
+.dashboard-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-.glass-card:hover {
-  border-color: var(--color-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+.glass-card:hover,
+.dashboard-card:hover {
+  border-color: var(--color-border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
 }
 
-.glass-button {
+/* Buttons */
+.glass-button,
+.btn-primary {
+  background: var(--color-primary);
+  color: #FFFFFF;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.glass-button:hover,
+.btn-primary:hover {
+  background: var(--color-secondary);
+}
+
+.glass-button:active,
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
   background: var(--color-surface);
   color: var(--color-text-main);
   border: 1px solid var(--color-border);
@@ -89,41 +104,38 @@ body {
   justify-content: center;
   cursor: pointer;
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-.glass-button:hover {
+.btn-secondary:hover {
   background: var(--color-surface-hover);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: #D1D5DB;
 }
 
-.glass-button:active {
+.btn-secondary:active {
   transform: scale(0.98);
 }
 
-/* Secondary Button Style */
-.glass-button.secondary {
-  background: var(--color-background);
+/* Transparent Ghost Button */
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 500;
 }
 
-.glass-button.secondary:hover {
-  border-color: var(--color-secondary);
-  color: var(--color-secondary);
+.btn-ghost:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-main);
 }
 
-/* Ambient Background Orbs (Hidden for Minimal Design) */
-.bg-orb {
-  display: none;
-}
-
-/* Text Glow (Removed for Minimal Design) */
-.text-glow,
-.text-glow-secondary {
-  text-shadow: none;
-}
-
-/* Gradient background component (Removed for Minimal Design) */
+/* Base structural classes */
 .app-bg {
   background: var(--color-background);
 }

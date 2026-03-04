@@ -1,55 +1,65 @@
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { Inbox as InboxIcon, RefreshCcw, Loader2 } from 'lucide-react';
+import { Mail, Calendar, RefreshCcw, Loader2 } from 'lucide-react';
 
 export default function Inbox({ messages, selectedId, onSelect, loading }) {
     return (
-        <div className="glass-panel h-full flex flex-col overflow-hidden max-h-[800px]">
-            <div className="p-5 border-b border-white/10 flex justify-between items-center bg-surface/50">
-                <div className="flex items-center gap-3 text-primary font-semibold">
-                    <InboxIcon className="w-5 h-5 text-secondary" />
-                    <h2 className="tracking-wide">Inbox</h2>
-                    <span className="bg-primary/20 text-primary text-xs px-2.5 py-1 rounded-full ml-1 font-bold font-mono">
-                        {messages.length}
-                    </span>
-                </div>
-                {loading && <Loader2 className="w-4 h-4 text-primary animate-spin" />}
+        <div className="h-full flex flex-col">
+            <div className="mb-4 flex items-center gap-2 text-textMain font-bold text-lg">
+                <Calendar className="w-5 h-5 text-primary" />
+                <h2>Inbox Messages</h2>
+                <span className="bg-surfaceHover text-textMuted text-xs px-2 py-0.5 rounded-full ml-2 font-medium">
+                    {messages.length}
+                </span>
+                {loading && <Loader2 className="w-4 h-4 text-primary animate-spin ml-2" />}
             </div>
 
-            <div className="flex-1 overflow-y-auto hide-scrollbar p-3 space-y-2">
-                {messages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-text-muted opacity-60 p-6 text-center">
-                        <RefreshCcw className="w-12 h-12 mb-5 text-secondary animate-spin-slow" style={{ animationDuration: '3s' }} />
-                        <p className="font-medium text-lg">Waiting for incoming emails...</p>
-                        <p className="text-sm mt-2 opacity-75">Auto-refreshing every 2 seconds</p>
-                    </div>
-                ) : (
-                    messages.map((msg) => (
-                        <div
-                            key={msg.id}
-                            onClick={() => onSelect(msg.id)}
-                            className={`p-4 rounded-xl cursor-pointer transition-all duration-300 border ${selectedId === msg.id
-                                ? 'bg-primary/20 border-primary/50 shadow-[0_0_15px_rgba(102,252,241,0.15)] scale-[1.02]'
-                                : 'bg-surface-hover border-white/5 hover:border-primary/30 hover:bg-surface/80'
-                                }`}
-                        >
-                            <div className="flex justify-between items-start mb-2">
-                                <span className={`font-semibold text-text-main truncate pr-3 flex-1 ${!msg.seen ? 'text-primary font-bold' : ''}`}>
-                                    {msg.from.address}
-                                </span>
-                                <span className="text-xs text-secondary whitespace-nowrap pt-1 font-medium bg-primary/10 px-2 py-0.5 rounded-md">
-                                    {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
-                                </span>
-                            </div>
-                            <p className={`text-sm text-text-main truncate mb-1 ${!msg.seen ? 'font-semibold' : ''}`}>
-                                {msg.subject || '(No Subject)'}
-                            </p>
-                            <p className="text-xs text-text-muted truncate leading-relaxed">
-                                {msg.intro}
-                            </p>
+            <div className="flex-1 dashboard-panel overflow-y-auto hide-scrollbar">
+                {/* Table Header mock */}
+                <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-border bg-surfaceHover/30 text-xs font-bold text-textMuted uppercase tracking-wider sticky top-0 z-10">
+                    <div className="col-span-3">Sender</div>
+                    <div className="col-span-6">Subject</div>
+                    <div className="col-span-3 text-right">Received</div>
+                </div>
+
+                <div className="flex flex-col">
+                    {messages.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center p-12 text-center">
+                            <RefreshCcw className="w-10 h-10 mb-4 text-border animate-spin-slow" style={{ animationDuration: '3s' }} />
+                            <p className="font-semibold text-textMain text-lg mb-1">Your inbox is empty</p>
+                            <p className="text-sm text-textMuted">Waiting for incoming emails... Auto-refreshing every 2s.</p>
                         </div>
-                    ))
-                )}
+                    ) : (
+                        messages.map((msg) => (
+                            <div
+                                key={msg.id}
+                                onClick={() => onSelect(msg.id)}
+                                className={`grid grid-cols-12 gap-4 px-6 py-4 border-b border-border last:border-0 cursor-pointer transition-colors items-center ${selectedId === msg.id
+                                        ? 'bg-primary/5 border-l-4 border-l-primary pr-5' // Adjust padding for border
+                                        : 'hover:bg-surfaceHover border-l-4 border-l-transparent pr-6'
+                                    }`}
+                            >
+                                <div className="col-span-3 truncate font-semibold text-sm text-textMain flex items-center gap-2">
+                                    {!msg.seen && <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>}
+                                    <span className="truncate">{msg.from.address}</span>
+                                </div>
+
+                                <div className="col-span-6 truncate flex flex-col justify-center">
+                                    <span className={`text-sm truncate ${!msg.seen ? 'font-semibold text-textMain' : 'text-textMain'}`}>
+                                        {msg.subject || '(No Subject)'}
+                                    </span>
+                                    <span className="text-xs text-textMuted truncate mt-0.5">
+                                        {msg.intro}
+                                    </span>
+                                </div>
+
+                                <div className="col-span-3 text-right text-sm text-textMuted font-medium whitespace-nowrap">
+                                    {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
             </div>
         </div>
     );
