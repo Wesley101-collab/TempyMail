@@ -11,9 +11,12 @@ import zipfile
 import smtplib
 import json
 import uuid
+import resend
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
+
+resend.api_key = os.getenv("RESEND_API_KEY", "")
 
 router = APIRouter()
 
@@ -392,16 +395,16 @@ async def download_attachment(attachment_id: str):
 async def reply_to_email(req: ReplyRequest):
     """Send a reply email via the local Postfix server."""
     try:
-        msg = MIMEText(req.body, "plain")
-        msg["From"] = req.from_address
-        msg["To"] = req.to_address
-        msg["Subject"] = req.subject
-        if req.in_reply_to:
-            msg["In-Reply-To"] = req.in_reply_to
-        
-        # Send via local Postfix
-        with smtplib.SMTP("localhost", 25) as smtp:
-            smtp.send_message(msg)
+        # Send via Resend
+        resend.Emails.send({
+            "from": f"TempyMail Reply <{req.from_address}>",
+            "to": req.to_address,
+            "subject": req.subject,
+            "text": req.body,
+            "headers": {
+                "In-Reply-To": req.in_reply_to
+            }
+        })
         
         # Store sent email
         reply_id = str(uuid.uuid4())
