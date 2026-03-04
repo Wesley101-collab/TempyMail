@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Copy, RefreshCw, Check, Bell, Search, History, ChevronRight, User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
-export default function Header({ account, generateAccount, refreshInbox, onLogoClick, history = [], recoverAccount, messages = [], onProfileClick }) {
+export default function Header({ account, generateAccount, refreshInbox, onLogoClick, history = [], recoverAccount, messages = [], onProfileClick, markAllAsSeen }) {
     const [copied, setCopied] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
 
@@ -127,7 +127,14 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                 </div>
 
                 {/* Notifications Bell */}
-                <button onClick={refreshInbox} className="btn-ghost p-2 relative" title="Refresh Inbox">
+                <button
+                    onClick={() => {
+                        refreshInbox();
+                        if (markAllAsSeen) markAllAsSeen();
+                    }}
+                    className="btn-ghost p-2 relative"
+                    title="Refresh & Clear Notifications"
+                >
                     <Bell className="w-5 h-5" />
                     {messages.filter(m => !m.seen).length > 0 && (
                         <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 rounded-full border-2 border-surface text-white text-[10px] font-bold flex items-center justify-center">

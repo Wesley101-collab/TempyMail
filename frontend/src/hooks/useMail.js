@@ -9,6 +9,13 @@ export const useMail = () => {
     const [error, setError] = useState(null);
     const [started, setStarted] = useState(false);
     const [history, setHistory] = useState([]);
+    const [seenMessageIds, setSeenMessageIds] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem('seen_messages') || '[]');
+        } catch {
+            return [];
+        }
+    });
 
     // Load history on mount
     useEffect(() => {
@@ -104,7 +111,12 @@ export const useMail = () => {
         if (!account?.address) return;
         try {
             const { data } = await api.get('/messages', { params: { address: account.address } });
-            setMessages(data.messages || []);
+            // Merge local seen state
+            const currentSeen = JSON.parse(localStorage.getItem('seen_messages') || '[]');
+            setMessages((data.messages || []).map(m => ({
+                ...m,
+                seen: currentSeen.includes(m.id)
+            })));
         } catch (err) {
             console.error('Failed to fetch messages', err);
         }
@@ -123,12 +135,33 @@ export const useMail = () => {
             setLoading(true);
             const { data } = await api.get(`/messages/${id}`);
             setSelectedMessage(data);
+
+            // Mark as seen
+            setSeenMessageIds(prev => {
+                const next = [...new Set([...prev, id])];
+                localStorage.setItem('seen_messages', JSON.stringify(next));
+                return next;
+            });
+            setMessages(prev => prev.map(m => m.id === id ? { ...m, seen: true } : m));
         } catch (err) {
             console.error('Failed to load message details', err);
         } finally {
             setLoading(false);
         }
     };
+
+    // Mark all as seen
+    const markAllAsSeen = useCallback(() => {
+        setMessages(prev => {
+            const allIds = prev.map(m => m.id);
+            setSeenMessageIds(prevSeen => {
+                const next = [...new Set([...prevSeen, ...allIds])];
+                localStorage.setItem('seen_messages', JSON.stringify(next));
+                return next;
+            });
+            return prev.map(m => ({ ...m, seen: true }));
+        });
+    }, []);
 
     // Delete a message
     const deleteMessage = async (id) => {
@@ -176,6 +209,7 @@ export const useMail = () => {
         setSelectedMessage,
         goHome,
         history,
-        recoverAccount
+        recoverAccount,
+        markAllAsSeen
     };
 };

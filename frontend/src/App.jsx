@@ -23,7 +23,8 @@ function App() {
     setSelectedMessage,
     goHome,
     history,
-    recoverAccount
+    recoverAccount,
+    markAllAsSeen
   } = useMail();
 
   const [showViewerOnMobile, setShowViewerOnMobile] = useState(false);
@@ -135,6 +136,7 @@ function App() {
         history={history}
         recoverAccount={recoverAccount}
         messages={messages}
+        markAllAsSeen={markAllAsSeen}
         onProfileClick={() => {
           const premiumUser = localStorage.getItem('premium_user');
           if (premiumUser) {
