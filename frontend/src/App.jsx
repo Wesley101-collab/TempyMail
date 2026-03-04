@@ -7,6 +7,7 @@ import LandingPage from './components/LandingPage';
 import AdminDashboard from './components/AdminDashboard';
 import PremiumAuth from './components/PremiumAuth';
 import ProfilePage from './components/ProfilePage';
+import AdBanner from './components/AdBanner';
 
 function App() {
   const {
@@ -176,6 +177,9 @@ function App() {
             />
           </div>
         </div>
+
+        {/* Ad Banner */}
+        <AdBanner position="footer" className="mt-4" />
       </main>
     </div>
   );
