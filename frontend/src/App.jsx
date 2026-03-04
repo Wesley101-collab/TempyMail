@@ -157,6 +157,7 @@ function App() {
               selectedId={selectedMessage?.id}
               onSelect={handleSelectMessage}
               loading={mailLoading && !selectedMessage && !isInitializing}
+              currentAddress={account?.address}
             />
           </div>
 

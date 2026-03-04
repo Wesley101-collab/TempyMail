@@ -1,8 +1,15 @@
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { Inbox as InboxIcon, RefreshCcw, Loader2 } from 'lucide-react';
+import { Inbox as InboxIcon, RefreshCcw, Loader2, Download, Paperclip } from 'lucide-react';
+import { api } from '../services/api';
 
-export default function Inbox({ messages, selectedId, onSelect, loading }) {
+export default function Inbox({ messages, selectedId, onSelect, loading, currentAddress }) {
+    const handleDownloadAll = () => {
+        if (!currentAddress || messages.length === 0) return;
+        const url = `${api.defaults.baseURL}/messages/download?address=${encodeURIComponent(currentAddress)}`;
+        window.open(url, '_blank');
+    };
+
     return (
         <div className="h-full flex flex-col">
             <div className="flex-1 dashboard-panel overflow-y-auto hide-scrollbar flex flex-col">
@@ -13,6 +20,15 @@ export default function Inbox({ messages, selectedId, onSelect, loading }) {
                         {messages.length}
                     </span>
                     {loading && <Loader2 className="w-4 h-4 text-primary animate-spin ml-2" />}
+                    {messages.length > 0 && (
+                        <button
+                            onClick={handleDownloadAll}
+                            className="ml-auto p-1.5 text-textMuted hover:text-primary hover:bg-surfaceHover rounded-lg transition-colors"
+                            title="Download all as .zip"
+                        >
+                            <Download className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
                 {messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center p-12 text-center h-full">
