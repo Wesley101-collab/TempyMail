@@ -6,6 +6,7 @@ import MessageViewer from './components/MessageViewer';
 import LandingPage from './components/LandingPage';
 import AdminDashboard from './components/AdminDashboard';
 import PremiumAuth from './components/PremiumAuth';
+import ProfilePage from './components/ProfilePage';
 
 function App() {
   const {
@@ -27,13 +28,15 @@ function App() {
 
   const [showViewerOnMobile, setShowViewerOnMobile] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
-  const [page, setPage] = useState('landing'); // 'landing' | 'email' | 'admin' | 'premium'
+  const [page, setPage] = useState('landing'); // 'landing' | 'email' | 'admin' | 'premium' | 'profile'
   // Check URL for /admin and /premium routes
   useEffect(() => {
     if (window.location.pathname === '/admin') {
       setPage('admin');
     } else if (window.location.pathname === '/premium') {
       setPage('premium');
+    } else if (window.location.pathname === '/profile') {
+      setPage('profile');
     }
   }, []);
 
@@ -75,11 +78,21 @@ function App() {
   if (page === 'premium') {
     return (
       <PremiumAuth
-        onBack={handleGoHome}
+        onBack={() => { setPage('email'); window.history.pushState({}, '', '/'); }}
         onSuccess={(user) => {
-          setPage('landing');
-          window.history.pushState({}, '', '/');
+          setPage('profile');
+          window.history.pushState({}, '', '/profile');
         }}
+      />
+    );
+  }
+
+  // Profile Page
+  if (page === 'profile') {
+    return (
+      <ProfilePage
+        onBack={() => { setPage('email'); window.history.pushState({}, '', '/'); }}
+        onLogout={() => { setPage('email'); window.history.pushState({}, '', '/'); }}
       />
     );
   }
@@ -123,8 +136,14 @@ function App() {
         recoverAccount={recoverAccount}
         messages={messages}
         onProfileClick={() => {
-          setPage('premium');
-          window.history.pushState({}, '', '/premium');
+          const premiumUser = localStorage.getItem('premium_user');
+          if (premiumUser) {
+            setPage('profile');
+            window.history.pushState({}, '', '/profile');
+          } else {
+            setPage('premium');
+            window.history.pushState({}, '', '/premium');
+          }
         }}
       />
 
