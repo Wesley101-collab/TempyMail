@@ -31,7 +31,6 @@ def init_db():
     """)
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_recipient ON emails(recipient)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_created_at ON emails(created_at)")
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_expires_at ON emails(expires_at)")
     
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS analytics (
@@ -103,6 +102,11 @@ def init_db():
     _safe_add_column(cursor, "premium_users", "forward_to", "TEXT DEFAULT ''")
     _safe_add_column(cursor, "premium_users", "webhook_url", "TEXT DEFAULT ''")
     
+    # Create indexes that depend on migrated columns (must be after migrations)
+    try:
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_expires_at ON emails(expires_at)")
+    except Exception:
+        pass    
     conn.commit()
     conn.close()
 
