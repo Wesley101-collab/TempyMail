@@ -30,18 +30,33 @@ function App() {
 
   const [showViewerOnMobile, setShowViewerOnMobile] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
-  const [page, setPage] = useState('landing'); // 'landing' | 'email' | 'admin' | 'premium' | 'profile'
-  // Check URL for /admin and /premium routes
+
+  // Determine initial page from URL
+  const getPageFromPath = (pathname) => {
+    if (pathname === '/admin') return 'admin';
+    if (pathname === '/premium') return 'premium';
+    if (pathname === '/profile') return 'profile';
+    return 'landing';
+  };
+
+  const [page, setPage] = useState(() => getPageFromPath(window.location.pathname));
+
+  // Listen for browser back/forward navigation
   useEffect(() => {
-    if (window.location.pathname === '/admin') {
-      setPage('admin');
-    } else if (window.location.pathname === '/premium') {
-      setPage('premium');
-    } else if (window.location.pathname === '/profile') {
-      setPage('profile');
-    }
+    const handlePopState = () => {
+      const newPage = getPageFromPath(window.location.pathname);
+      setPage(newPage);
+      setShowViewerOnMobile(false);
+      setSelectedMessage(null);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  const navigateTo = (newPage, path) => {
+    setPage(newPage);
+    window.history.pushState({ page: newPage }, '', path);
+  };
 
   const handleSelectMessage = async (id) => {
     setIsInitializing(true);
@@ -57,34 +72,34 @@ function App() {
 
   const handleGetStarted = async () => {
     await generateAccount();
-    setPage('email');
+    navigateTo('email', '/');
   };
 
   const handleGoHome = () => {
     goHome();
-    setPage('landing');
-    window.history.pushState({}, '', '/');
+    navigateTo('landing', '/');
   };
 
-  // If user already has an active session, show email on page load
+  const handleGoToEmail = () => {
+    navigateTo('email', '/');
+  };
+
+  // If user already has an active session, redirect to email
   if (started && page === 'landing') {
     setPage('email');
   }
 
   // Admin Dashboard
   if (page === 'admin') {
-    return <AdminDashboard onBack={handleGoHome} />;
+    return <AdminDashboard onBack={handleGoToEmail} />;
   }
 
   // Premium Auth
   if (page === 'premium') {
     return (
       <PremiumAuth
-        onBack={() => { setPage('email'); window.history.pushState({}, '', '/'); }}
-        onSuccess={(user) => {
-          setPage('profile');
-          window.history.pushState({}, '', '/profile');
-        }}
+        onBack={handleGoToEmail}
+        onSuccess={(user) => navigateTo('profile', '/profile')}
       />
     );
   }
@@ -93,13 +108,13 @@ function App() {
   if (page === 'profile') {
     return (
       <ProfilePage
-        onBack={() => { setPage('email'); window.history.pushState({}, '', '/'); }}
-        onLogout={() => { setPage('email'); window.history.pushState({}, '', '/'); }}
+        onBack={handleGoToEmail}
+        onLogout={handleGoToEmail}
       />
     );
   }
 
-  // Show landing page if no active session
+  // Landing page
   if (page === 'landing' && !started) {
     return (
       <LandingPage
@@ -117,7 +132,7 @@ function App() {
             <div className="w-10 h-10 border-4 border-red-500 rounded-full flex items-center justify-center pb-1 text-red-400 font-bold text-xl">!</div>
           </div>
           <h2 className="text-2xl font-bold text-red-400 mb-4 tracking-tight">API Connection Error</h2>
-          <p className="text-text-muted mb-8 leading-relaxed font-medium">{error}</p>
+          <p className="text-textMuted mb-8 leading-relaxed font-medium">{error}</p>
           <button onClick={generateAccount} className="glass-button w-full px-6 py-3 font-semibold tracking-wide text-lg shadow-lg">
             Retry Connection
           </button>
@@ -141,20 +156,18 @@ function App() {
         onProfileClick={() => {
           const premiumUser = localStorage.getItem('premium_user');
           if (premiumUser) {
-            setPage('profile');
-            window.history.pushState({}, '', '/profile');
+            navigateTo('profile', '/profile');
           } else {
-            setPage('premium');
-            window.history.pushState({}, '', '/premium');
+            navigateTo('premium', '/premium');
           }
         }}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-6 lg:p-10 relative z-10 flex flex-col h-full">
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[600px] h-[calc(100vh-160px)] relative">
+      {/* Main Content Area - Fixed mobile layout */}
+      <main className="flex-1 w-full max-w-[1400px] mx-auto p-3 sm:p-4 md:p-6 lg:p-10 relative z-10 flex flex-col overflow-hidden">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 overflow-hidden" style={{ height: 'calc(100vh - 80px)' }}>
           {/* Inbox List */}
-          <div className={`lg:col-span-4 xl:col-span-3 h-full ${showViewerOnMobile ? 'hidden lg:block' : 'block'}`}>
+          <div className={`lg:col-span-4 xl:col-span-3 overflow-hidden ${showViewerOnMobile ? 'hidden lg:block' : 'block'}`}>
             <Inbox
               messages={messages}
               selectedId={selectedMessage?.id}
@@ -165,7 +178,7 @@ function App() {
           </div>
 
           {/* Message Viewer */}
-          <div className={`lg:col-span-8 xl:col-span-9 h-full ${!showViewerOnMobile ? 'hidden lg:block' : 'block'}`}>
+          <div className={`lg:col-span-8 xl:col-span-9 overflow-hidden ${!showViewerOnMobile ? 'hidden lg:block' : 'block'}`}>
             <MessageViewer
               message={selectedMessage}
               loading={isInitializing}
@@ -179,7 +192,7 @@ function App() {
         </div>
 
         {/* Ad Banner */}
-        <AdBanner position="footer" className="mt-4" />
+        <AdBanner position="footer" className="mt-2 sm:mt-4" />
       </main>
     </div>
   );
