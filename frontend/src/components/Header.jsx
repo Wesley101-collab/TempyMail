@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Copy, RefreshCw, Check, Bell, Search, History, ChevronRight, User, Moon, Sun, Globe } from 'lucide-react';
+import { Mail, Copy, RefreshCw, Check, Bell, Search, History, ChevronRight, User, Moon, Sun, Globe, Menu } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useTheme } from '../ThemeProvider';
 import { useI18n } from '../i18n';
@@ -53,6 +53,32 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
 
             {/* Right: Actions */}
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                {/* Mobile Important Actions (hidden on lg) */}
+                <div className="flex items-center gap-0.5 md:gap-1 lg:hidden">
+                    <button
+                        onClick={generateAccount}
+                        className="btn-ghost p-1.5 sm:p-2 relative group"
+                        title={t('changeEmail')}
+                    >
+                        <RefreshCw className="w-5 h-5 text-textMain group-hover:text-primary transition-colors" />
+                    </button>
+                    <button
+                        onClick={() => {
+                            refreshInbox();
+                            if (markAllAsSeen) markAllAsSeen();
+                        }}
+                        className="btn-ghost p-1.5 sm:p-2 relative group"
+                        title={t('refreshNotif')}
+                    >
+                        <Bell className="w-5 h-5 text-textMain group-hover:text-primary transition-colors" />
+                        {messages.filter(m => !m.seen).length > 0 && (
+                            <span className="absolute -top-0.5 right-0 min-w-[18px] h-[18px] bg-red-500 rounded-full border-2 border-surface text-white text-[10px] font-bold flex items-center justify-center">
+                                {messages.filter(m => !m.seen).length}
+                            </span>
+                        )}
+                    </button>
+                </div>
+
                 {/* Dark Mode Toggle - always icon */}
                 <button
                     onClick={toggleTheme}
@@ -132,9 +158,10 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                 <div className="relative lg:hidden">
                     <button
                         onClick={() => setShowMobileMenu(!showMobileMenu)}
-                        className={`btn-ghost px-3 py-2 text-sm font-semibold transition-colors ${showMobileMenu ? 'bg-surfaceHover text-primary' : ''}`}
+                        className={`btn-ghost p-1.5 sm:p-2 transition-colors ${showMobileMenu ? 'bg-surfaceHover text-primary' : ''}`}
+                        title="Menu"
                     >
-                        Menu
+                        <Menu className="w-6 h-6 text-textMain" />
                     </button>
 
                     {showMobileMenu && (
@@ -142,42 +169,21 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                             <div className="fixed inset-0 z-40" onClick={() => setShowMobileMenu(false)} />
                             <div className="absolute right-0 top-full mt-2 w-56 dashboard-panel shadow-xl z-50 overflow-hidden text-left origin-top-right py-2 border border-border flex flex-col">
                                 <button
-                                    onClick={() => { generateAccount(); setShowMobileMenu(false); }}
-                                    className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-surfaceHover text-textMain transition-colors"
-                                >
-                                    {t('changeEmail')}
-                                </button>
-
-                                <button
                                     onClick={() => {
                                         setShowMobileMenu(false);
                                         setTimeout(() => setShowHistory(true), 10);
                                     }}
-                                    className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-surfaceHover text-textMain transition-colors"
+                                    className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-surfaceHover text-textMain transition-colors flex items-center gap-2"
                                 >
+                                    <History className="w-4 h-4" />
                                     {t('sessionHistory')}
                                 </button>
 
                                 <button
-                                    onClick={() => {
-                                        refreshInbox();
-                                        if (markAllAsSeen) markAllAsSeen();
-                                        setShowMobileMenu(false);
-                                    }}
-                                    className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-surfaceHover text-textMain transition-colors flex items-center justify-between"
-                                >
-                                    <span>{t('refreshNotif')}</span>
-                                    {messages.filter(m => !m.seen).length > 0 && (
-                                        <span className="bg-red-500 rounded-full px-2 py-0.5 text-white text-xs font-bold">
-                                            {messages.filter(m => !m.seen).length}
-                                        </span>
-                                    )}
-                                </button>
-
-                                <button
                                     onClick={() => { onProfileClick(); setShowMobileMenu(false); }}
-                                    className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-surfaceHover text-textMain transition-colors border-b border-border/50 pb-4"
+                                    className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-surfaceHover text-textMain transition-colors border-b border-border/50 pb-4 flex items-center gap-2"
                                 >
+                                    <User className="w-4 h-4" />
                                     {t('premiumAccount')}
                                 </button>
 
