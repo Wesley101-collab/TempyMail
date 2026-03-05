@@ -33,8 +33,16 @@ def _count_accounts_today(ip: str) -> int:
 async def create_account(request: Request):
     """Generates a new random email address on vredobox.cc."""
     try:
-        # Extract IP, preferring Cloudflare header
-        client_ip = request.headers.get("cf-connecting-ip") or request.headers.get("x-forwarded-for") or request.client.host
+        # Extract IP, preferring Cloudflare header (fallback to standard headers)
+        client_ip = request.headers.get("cf-connecting-ip")
+        if not client_ip:
+            client_ip = request.headers.get("x-forwarded-for")
+            if client_ip:
+                client_ip = client_ip.split(",")[0].strip()
+        if not client_ip and request.client:
+            client_ip = request.client.host
+            
+        client_ip = client_ip or "unknown"
         
         # Check daily limit (free tier = 3/day per browser, enforced loosely)
         count = _count_accounts_today("")
