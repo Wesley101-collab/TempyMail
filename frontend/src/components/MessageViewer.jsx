@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import {
     MailOpen, Trash2, ArrowLeft, Loader2, Download, FileDown,
-    Sparkles, Paperclip, Reply, Send, X, File
+    Sparkles, Paperclip, Reply, Send, X, File, Clock
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -311,6 +311,39 @@ export default function MessageViewer({ message, loading, onDelete, onBack }) {
                         </pre>
                     )}
                 </div>
+
+                {/* Reply Thread */}
+                {message.replies && message.replies.length > 0 && (
+                    <div className="mt-8 space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-px bg-border flex-1 border-dashed"></div>
+                            <span className="text-xs font-bold text-textMuted uppercase tracking-wider">Conversation History</span>
+                            <div className="h-px bg-border flex-1 border-dashed"></div>
+                        </div>
+                        {message.replies.map((reply, index) => (
+                            <div key={reply.id} className="p-5 rounded-xl bg-surfaceHover border border-border">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+                                            Me
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-sm text-textMain">You (Reply)</p>
+                                            <p className="text-xs text-textMuted">To: {reply.to[0].address}</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-xs text-textMuted flex items-center gap-1.5">
+                                        <Clock className="w-3.5 h-3.5" />
+                                        {format(new Date(reply.createdAt), 'MMM d, yyyy h:mm a')}
+                                    </div>
+                                </div>
+                                <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed text-sm mt-3 pt-3 border-t border-border">
+                                    {reply.text}
+                                </pre>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

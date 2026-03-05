@@ -78,6 +78,25 @@ def get_message(message_id: str) -> dict:
     if not row:
         return None
     
+    # Fetch replies
+    cursor = conn.execute(
+        "SELECT id, from_address, to_address, subject, body, created_at FROM sent_emails WHERE in_reply_to = ? ORDER BY created_at ASC",
+        (message_id,)
+    )
+    reply_rows = cursor.fetchall()
+    conn.close()
+    
+    replies = []
+    for r in reply_rows:
+        replies.append({
+            "id": r["id"],
+            "from": {"address": r["from_address"], "name": "Me"},
+            "to": [{"address": r["to_address"]}],
+            "subject": r["subject"],
+            "text": r["body"],
+            "createdAt": r["created_at"]
+        })
+    
     return {
         "id": row["id"],
         "from": {"address": row["sender"], "name": row["sender_name"]},
@@ -87,7 +106,8 @@ def get_message(message_id: str) -> dict:
         "html": [row["html_body"]] if row["html_body"] else [],
         "hasAttachments": bool(row["has_attachments"]),
         "createdAt": row["created_at"],
-        "seen": True
+        "seen": True,
+        "replies": replies
     }
 
 
