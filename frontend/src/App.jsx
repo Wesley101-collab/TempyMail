@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useMail } from './hooks/useMail';
 import Header from './components/Header';
 import { Home } from 'lucide-react';
@@ -32,6 +32,7 @@ function App() {
 
   const [showViewerOnMobile, setShowViewerOnMobile] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
+  const didInitialRedirect = useRef(false);
 
   // Determine initial page from URL
   const getPageFromPath = (pathname) => {
@@ -91,9 +92,13 @@ function App() {
     navigateTo('email', '/');
   };
 
-  // If user already has an active session, redirect to email
-  if (started && page === 'landing') {
-    setPage('email');
+  // On initial mount only: if user has an active session and is on landing, redirect to email
+  if (!didInitialRedirect.current && started && page === 'landing') {
+    didInitialRedirect.current = true;
+    // Use setTimeout to avoid state update during render
+    setTimeout(() => setPage('email'), 0);
+  } else if (started) {
+    didInitialRedirect.current = true;
   }
 
   // Admin Dashboard
@@ -127,6 +132,7 @@ function App() {
       <LandingPage
         onGetStarted={handleGetStarted}
         loading={mailLoading}
+        onGoToPremium={() => navigateTo('premium', '/premium')}
       />
     );
   }

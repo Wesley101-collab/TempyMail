@@ -35,6 +35,20 @@ export default function MessageViewer({ message, loading, onDelete, onBack }) {
     const handleSummarize = async () => {
         if (!message) return;
 
+        // Check daily AI summary limit for free users
+        const isPremium = !!localStorage.getItem('premium_email');
+        if (!isPremium) {
+            const today = new Date().toISOString().split('T')[0];
+            const limitData = JSON.parse(localStorage.getItem('ai_summary_limit') || '{}');
+            const todayCount = limitData.date === today ? (limitData.count || 0) : 0;
+            if (todayCount >= 2) {
+                setSummaryError("Daily AI summary limit reached (2/day for free users). Upgrade to Premium for unlimited summaries!");
+                return;
+            }
+            // Increment count
+            localStorage.setItem('ai_summary_limit', JSON.stringify({ date: today, count: todayCount + 1 }));
+        }
+
         // Get text content — either from text field or extract from HTML
         let textContent = message.text;
         if (!textContent && message.html && message.html.length > 0) {
@@ -59,6 +73,7 @@ export default function MessageViewer({ message, loading, onDelete, onBack }) {
             setSummarizing(false);
         }
     };
+
 
     const handleDownloadEml = () => {
         const url = `${api.defaults.baseURL}/messages/${message.id}/download`;

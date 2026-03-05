@@ -4,7 +4,7 @@ import {
     AtSign, Forward, Reply, Paperclip, Webhook, Inbox, Download, Clock
 } from 'lucide-react';
 
-export default function LandingPage({ onGetStarted, loading }) {
+export default function LandingPage({ onGetStarted, loading, onGoToPremium }) {
     return (
         <div className="min-h-screen flex flex-col bg-background relative overflow-hidden text-textMain">
 
@@ -20,7 +20,7 @@ export default function LandingPage({ onGetStarted, loading }) {
                     <a href="#features" className="text-sm font-medium text-textMuted hover:text-textMain transition-colors hidden sm:block">Features</a>
                     <a href="#pricing" className="text-sm font-medium text-textMuted hover:text-textMain transition-colors hidden sm:block">Pricing</a>
                     <button
-                        onClick={() => { window.history.pushState({}, '', '/premium'); window.location.reload(); }}
+                        onClick={onGoToPremium}
                         className="text-xs sm:text-sm font-bold text-primary hover:text-secondary transition-colors"
                     >
                         Login
@@ -184,7 +184,7 @@ export default function LandingPage({ onGetStarted, loading }) {
                                 <PricingItem included>Webhook notifications</PricingItem>
                             </ul>
                             <button
-                                onClick={() => { window.history.pushState({}, '', '/premium'); window.location.reload(); }}
+                                onClick={onGoToPremium}
                                 className="w-full btn-primary py-3 hover:-translate-y-0.5 shadow-md shadow-green-500/20 text-sm"
                             >
                                 Upgrade to Premium
