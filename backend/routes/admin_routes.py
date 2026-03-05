@@ -112,3 +112,53 @@ async def get_recent_emails(x_admin_key: Optional[str] = Header(None)):
             for row in rows
         ]
     }
+
+
+@router.get("/admin/premium-users")
+async def get_premium_users(x_admin_key: Optional[str] = Header(None)):
+    """Get list of all premium users."""
+    verify_admin(x_admin_key)
+    
+    conn = get_connection()
+    rows = conn.execute(
+        "SELECT email, created_at FROM premium_users ORDER BY created_at DESC"
+    ).fetchall()
+    conn.close()
+    
+    return {
+        "users": [
+            {
+                "email": row["email"],
+                "joinedAt": row["created_at"]
+            }
+            for row in rows
+        ]
+    }
+
+
+@router.get("/admin/ip-visitors")
+async def get_ip_visitors(x_admin_key: Optional[str] = Header(None)):
+    """Get list of unique visitor IPs with timestamps."""
+    verify_admin(x_admin_key)
+    
+    conn = get_connection()
+    rows = conn.execute(
+        "SELECT value, created_at FROM analytics WHERE event = 'account_created' AND value LIKE '%|%' ORDER BY created_at DESC"
+    ).fetchall()
+    conn.close()
+    
+    seen = set()
+    visitors = []
+    for row in rows:
+        val = row["value"]
+        if "|" in val:
+            parts = val.split("|", 1)
+            ip = parts[1].strip()
+            if ip and ip not in seen:
+                seen.add(ip)
+                visitors.append({
+                    "ip": ip,
+                    "firstSeen": row["created_at"]
+                })
+    
+    return {"visitors": visitors}

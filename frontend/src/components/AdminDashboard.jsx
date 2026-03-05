@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Mail, Users, TrendingUp, ArrowLeft, Lock, Loader2, RefreshCw, Activity, Inbox, Clock, Globe, Shield } from 'lucide-react';
+import { BarChart3, Mail, Users, TrendingUp, ArrowLeft, Lock, Loader2, RefreshCw, Activity, Inbox, Clock, Globe, Shield, X, ChevronRight } from 'lucide-react';
 import { api } from '../services/api';
 
 export default function AdminDashboard({ onBack }) {
@@ -10,6 +10,7 @@ export default function AdminDashboard({ onBack }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [lastRefresh, setLastRefresh] = useState(null);
+    const [detailModal, setDetailModal] = useState(null); // { type: 'premium' | 'ip', data: [] }
 
     const login = async () => {
         setLoading(true);
@@ -49,6 +50,26 @@ export default function AdminDashboard({ onBack }) {
             console.error('Failed to refresh stats');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const openPremiumUsers = async () => {
+        const key = localStorage.getItem('admin_key') || adminKey;
+        try {
+            const res = await api.get('/admin/premium-users', { headers: { 'X-Admin-Key': key } });
+            setDetailModal({ type: 'premium', data: res.data.users || [] });
+        } catch (err) {
+            console.error('Failed to fetch premium users');
+        }
+    };
+
+    const openIpVisitors = async () => {
+        const key = localStorage.getItem('admin_key') || adminKey;
+        try {
+            const res = await api.get('/admin/ip-visitors', { headers: { 'X-Admin-Key': key } });
+            setDetailModal({ type: 'ip', data: res.data.visitors || [] });
+        } catch (err) {
+            console.error('Failed to fetch IP visitors');
         }
     };
 
@@ -143,12 +164,14 @@ export default function AdminDashboard({ onBack }) {
                         label="Premium Users"
                         value={stats?.premiumUsers || 0}
                         color="orange"
+                        onClick={openPremiumUsers}
                     />
                     <StatCard
                         icon={<Globe className="w-5 h-5" />}
                         label="Traffic (Unique IPs)"
                         value={stats?.uniqueWebVisitors || 0}
                         color="teal"
+                        onClick={openIpVisitors}
                     />
                     <StatCard
                         icon={<Users className="w-5 h-5" />}
@@ -311,22 +334,73 @@ export default function AdminDashboard({ onBack }) {
                     )}
                 </div>
             </div>
+
+            {/* Detail Modal */}
+            {detailModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setDetailModal(null)}>
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between p-5 border-b border-border">
+                            <h3 className="text-lg font-extrabold text-gray-900">
+                                {detailModal.type === 'premium' ? '👑 Premium Users' : '🌐 Unique Visitors (IPs)'}
+                            </h3>
+                            <button onClick={() => setDetailModal(null)} className="p-1.5 rounded-lg hover:bg-surfaceHover text-textMuted">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="overflow-y-auto flex-1 divide-y divide-border">
+                            {detailModal.data.length === 0 ? (
+                                <p className="text-textMuted text-sm p-6 text-center">No data yet.</p>
+                            ) : detailModal.type === 'premium' ? (
+                                detailModal.data.map((user, i) => (
+                                    <div key={i} className="flex items-center justify-between px-5 py-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm">P</div>
+                                            <span className="text-sm font-medium text-gray-900">{user.email}</span>
+                                        </div>
+                                        <span className="text-xs text-textMuted">{new Date(user.joinedAt).toLocaleDateString()}</span>
+                                    </div>
+                                ))
+                            ) : (
+                                detailModal.data.map((v, i) => (
+                                    <div key={i} className="flex items-center justify-between px-5 py-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center font-bold text-xs">IP</div>
+                                            <span className="text-sm font-mono font-medium text-gray-900">{v.ip}</span>
+                                        </div>
+                                        <span className="text-xs text-textMuted">{new Date(v.firstSeen).toLocaleString()}</span>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        <div className="p-4 border-t border-border text-xs text-textMuted text-center">
+                            {detailModal.data.length} {detailModal.type === 'premium' ? 'premium user(s)' : 'unique IP(s)'}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
 
-function StatCard({ icon, label, value, color = 'green' }) {
+function StatCard({ icon, label, value, color = 'green', onClick }) {
     const colors = {
         blue: 'bg-blue-50 text-blue-500 border-blue-100',
         green: 'bg-green-50 text-green-600 border-green-100',
         purple: 'bg-purple-50 text-purple-500 border-purple-100',
         orange: 'bg-orange-50 text-orange-500 border-orange-100',
+        teal: 'bg-teal-50 text-teal-600 border-teal-100',
     };
     return (
-        <div className="dashboard-card p-4 sm:p-6">
+        <div
+            className={`dashboard-card p-4 sm:p-6 ${onClick ? 'cursor-pointer hover:ring-2 hover:ring-primary/30 transition-shadow' : ''}`}
+            onClick={onClick}
+        >
             <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <p className="text-textMuted text-xs font-bold uppercase tracking-wider">{label}</p>
-                <div className={`p-1.5 sm:p-2 ${colors[color]} rounded-lg border`}>{icon}</div>
+                <div className="flex items-center gap-1">
+                    {onClick && <ChevronRight className="w-3.5 h-3.5 text-textMuted" />}
+                    <div className={`p-1.5 sm:p-2 ${colors[color]} rounded-lg border`}>{icon}</div>
+                </div>
             </div>
             <p className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
                 {typeof value === 'number' ? value.toLocaleString() : value}
