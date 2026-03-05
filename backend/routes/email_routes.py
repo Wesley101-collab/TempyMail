@@ -36,13 +36,15 @@ async def create_account(request: Request):
         # Extract IP, preferring Cloudflare header (fallback to standard headers)
         client_ip = request.headers.get("cf-connecting-ip")
         if not client_ip:
-            client_ip = request.headers.get("x-forwarded-for")
-            if client_ip:
-                client_ip = client_ip.split(",")[0].strip()
+            fwd = request.headers.get("x-forwarded-for")
+            if fwd:
+                client_ip = fwd.split(",")[0].strip()
+        if not client_ip:
+            client_ip = request.headers.get("x-real-ip")
         if not client_ip and request.client:
             client_ip = request.client.host
             
-        client_ip = client_ip or "unknown"
+        client_ip = (client_ip or "unknown").strip()
         
         # Check daily limit (free tier = 3/day per browser, enforced loosely)
         count = _count_accounts_today("")
