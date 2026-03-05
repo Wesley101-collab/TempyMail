@@ -143,7 +143,7 @@ function App() {
               className="w-full px-6 py-3 rounded-xl border border-border bg-surface hover:bg-surfaceHover text-textMain font-semibold transition-colors flex items-center justify-center gap-2"
             >
               <Home className="w-4 h-4" />
-              Go to Homepage
+              Go to Dashboard
             </button>
           </div>
         </div>
