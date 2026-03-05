@@ -1,10 +1,7 @@
 import sqlite3
 import os
 
-DB_PATH = os.environ.get(
-    'DB_PATH',
-    os.path.join(os.path.dirname(os.path.dirname(__file__)), "emails.db")
-)
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "emails.db")
 
 def get_connection():
     """Get a SQLite connection with row_factory for dict-like access."""
