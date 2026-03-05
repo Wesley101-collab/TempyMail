@@ -38,6 +38,27 @@ async def get_stats(x_admin_key: Optional[str] = Header(None)):
         "SELECT COUNT(*) as count FROM analytics WHERE event = 'account_created' AND DATE(created_at) = DATE('now')"
     ).fetchone()["count"]
     
+    # Premium Users
+    premium_users = conn.execute(
+        "SELECT COUNT(*) as count FROM premium_users"
+    ).fetchone()["count"]
+    
+    # Unique Web Visitors (count distinct IP addresses from analytics value where formatted as email|IP)
+    # We parse the IP out of the 'value' column (which is "email|IP")
+    unique_visitors_rows = conn.execute(
+        "SELECT value FROM analytics WHERE event = 'account_created' AND value LIKE '%|%'"
+    ).fetchall()
+    
+    unique_ips = set()
+    for r in unique_visitors_rows:
+        val = r["value"]
+        if "|" in val:
+            ip = val.split("|")[1]
+            if ip and ip.strip():
+                unique_ips.add(ip.strip())
+    
+    unique_web_visitors = len(unique_ips)
+    
     # Unique recipients (distinct mailboxes that received mail)
     unique_recipients = conn.execute(
         "SELECT COUNT(DISTINCT recipient) as count FROM emails"
@@ -61,6 +82,8 @@ async def get_stats(x_admin_key: Optional[str] = Header(None)):
         "emailsToday": emails_today,
         "totalAccounts": total_accounts,
         "accountsToday": accounts_today,
+        "premiumUsers": premium_users,
+        "uniqueWebVisitors": max(unique_web_visitors, 1), # At least 1 for the admin
         "uniqueRecipients": unique_recipients,
         "hourlyChart": hourly_chart
     }

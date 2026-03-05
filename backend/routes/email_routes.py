@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel
 from services import mailbox
 from services.database import get_connection
@@ -30,13 +30,16 @@ def _count_accounts_today(ip: str) -> int:
 # --- Email Routes ---
 
 @router.post("/accounts")
-async def create_account():
+async def create_account(request: Request):
     """Generates a new random email address on vredobox.cc."""
     try:
+        # Extract IP, preferring Cloudflare header
+        client_ip = request.headers.get("cf-connecting-ip") or request.headers.get("x-forwarded-for") or request.client.host
+        
         # Check daily limit (free tier = 3/day per browser, enforced loosely)
         count = _count_accounts_today("")
         # We track globally for now; per-user tracking needs cookies/IP
-        data = mailbox.generate_address()
+        data = mailbox.generate_address(ip_address=client_ip)
         data["remaining_today"] = max(0, FREE_DAILY_LIMIT - (count + 1))
         data["daily_limit"] = FREE_DAILY_LIMIT
         return data

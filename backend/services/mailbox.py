@@ -10,7 +10,7 @@ NOUNS = ["fox", "bear", "wolf", "eagle", "tiger", "lion", "panda", "koala", "haw
 NAMES = ["alex", "jordan", "taylor", "morgan", "casey", "riley", "sam", "jamie", "drew", "avery", "blake", "cameron", "devon", "elliot", "quinn", "john", "jane", "michael", "sarah", "david", "emily"]
 
 
-def generate_address() -> dict:
+def generate_address(ip_address: str = "") -> dict:
     """Generate a random email address on our domain."""
     pattern = random.choice(["adj_noun", "name_num", "name_name"])
     if pattern == "adj_noun":
@@ -24,9 +24,11 @@ def generate_address() -> dict:
     address = f"{base}{suffix}@{EMAIL_DOMAIN}"
     account_id = str(uuid.uuid4())[:8]
     
-    # Log the account creation for analytics
+    # Log the account creation and IP for analytics
+    analytics_val = f"{address}|{ip_address}" if ip_address else address
+    
     conn = get_connection()
-    conn.execute("INSERT INTO analytics (event, value) VALUES (?, ?)", ("account_created", address))
+    conn.execute("INSERT INTO analytics (event, value) VALUES (?, ?)", ("account_created", analytics_val))
     conn.commit()
     conn.close()
     

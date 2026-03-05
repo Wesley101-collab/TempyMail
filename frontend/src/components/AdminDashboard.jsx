@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Mail, Users, TrendingUp, ArrowLeft, Lock, Loader2, RefreshCw, Activity, Inbox, Clock, Globe } from 'lucide-react';
+import { BarChart3, Mail, Users, TrendingUp, ArrowLeft, Lock, Loader2, RefreshCw, Activity, Inbox, Clock, Globe, Shield } from 'lucide-react';
 import { api } from '../services/api';
 
 export default function AdminDashboard({ onBack }) {
@@ -136,8 +136,32 @@ export default function AdminDashboard({ onBack }) {
                     </div>
                 </div>
 
-                {/* Stat Cards - 2x2 on mobile, 4 cols on desktop */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+                {/* Stat Cards - 2x2 on mobile, 3 cols on desktop */}
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+                    <StatCard
+                        icon={<Shield className="w-5 h-5" />}
+                        label="Premium Users"
+                        value={stats?.premiumUsers || 0}
+                        color="orange"
+                    />
+                    <StatCard
+                        icon={<Globe className="w-5 h-5" />}
+                        label="Traffic (Unique IPs)"
+                        value={stats?.uniqueWebVisitors || 0}
+                        color="teal"
+                    />
+                    <StatCard
+                        icon={<Users className="w-5 h-5" />}
+                        label="Accounts Today"
+                        value={stats?.accountsToday || 0}
+                        color="purple"
+                    />
+                    <StatCard
+                        icon={<Users className="w-5 h-5" />}
+                        label="Total Accounts"
+                        value={stats?.totalAccounts || 0}
+                        color="purple"
+                    />
                     <StatCard
                         icon={<Mail className="w-5 h-5" />}
                         label="Emails Today"
@@ -149,18 +173,6 @@ export default function AdminDashboard({ onBack }) {
                         label="Total Emails"
                         value={stats?.totalEmails || 0}
                         color="green"
-                    />
-                    <StatCard
-                        icon={<Users className="w-5 h-5" />}
-                        label="Accounts Today"
-                        value={stats?.accountsToday || 0}
-                        color="purple"
-                    />
-                    <StatCard
-                        icon={<Globe className="w-5 h-5" />}
-                        label="Total Accounts"
-                        value={stats?.totalAccounts || 0}
-                        color="orange"
                     />
                 </div>
 
