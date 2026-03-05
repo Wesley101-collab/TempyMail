@@ -51,17 +51,25 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
             </div>
 
             {/* Right: Actions */}
-            <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 flex-shrink-0">
-                {/* Change Email */}
+            <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2 flex-shrink-0">
+                {/* Change Email - hidden on mobile */}
                 <button
                     onClick={generateAccount}
-                    className="hidden sm:flex btn-ghost text-sm px-3 py-2 gap-1.5 font-semibold"
+                    className="hidden md:flex btn-ghost text-sm px-2.5 py-2 gap-1.5 font-semibold"
                 >
                     <RefreshCw className="w-4 h-4" />
                     <span>{t('changeEmail')}</span>
                 </button>
+                {/* Change Email - icon only on mobile */}
+                <button
+                    onClick={generateAccount}
+                    className="md:hidden btn-ghost p-2"
+                    title={t('changeEmail')}
+                >
+                    <RefreshCw className="w-4 h-4" />
+                </button>
 
-                {/* Dark Mode Toggle */}
+                {/* Dark Mode Toggle - always icon */}
                 <button
                     onClick={toggleTheme}
                     className="btn-ghost p-2"
@@ -74,10 +82,10 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                 <div className="relative">
                     <button
                         onClick={() => setShowLangMenu(!showLangMenu)}
-                        className={`btn-ghost px-3 py-2 text-sm font-semibold gap-1.5 transition-colors ${showLangMenu ? 'bg-surfaceHover text-primary' : ''}`}
+                        className={`btn-ghost p-2 md:px-2.5 md:py-2 text-sm font-semibold gap-1.5 transition-colors ${showLangMenu ? 'bg-surfaceHover text-primary' : ''}`}
                     >
                         <span>{LANGUAGES.find(l => l.code === lang)?.flag}</span>
-                        <span className="hidden sm:inline">{t('language')}</span>
+                        <span className="hidden md:inline">{t('language')}</span>
                     </button>
 
                     {showLangMenu && (
@@ -102,14 +110,14 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                     )}
                 </div>
 
-                {/* History Dropdown */}
-                <div className="relative hidden sm:block">
+                {/* History - hidden on mobile */}
+                <div className="relative hidden md:block">
                     <button
                         onClick={() => setShowHistory(!showHistory)}
-                        className={`btn-ghost px-3 py-2 text-sm font-semibold gap-1.5 transition-colors ${showHistory ? 'bg-surfaceHover text-primary' : ''}`}
+                        className={`btn-ghost px-2.5 py-2 text-sm font-semibold gap-1.5 transition-colors ${showHistory ? 'bg-surfaceHover text-primary' : ''}`}
                     >
                         <History className="w-4 h-4" />
-                        <span className="hidden lg:inline">{t('sessionHistory')}</span>
+                        <span>{t('sessionHistory')}</span>
                     </button>
 
                     {showHistory && (
@@ -170,10 +178,10 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                         refreshInbox();
                         if (markAllAsSeen) markAllAsSeen();
                     }}
-                    className="btn-ghost px-3 py-2 text-sm font-semibold gap-1.5 relative"
+                    className="btn-ghost p-2 md:px-2.5 md:py-2 text-sm font-semibold gap-1.5 relative"
                 >
                     <Bell className="w-4 h-4" />
-                    <span className="hidden sm:inline">{t('refreshNotif').split(' ')[0]}</span>
+                    <span className="hidden md:inline">{t('refreshNotif').split(' ')[0]}</span>
                     {messages.filter(m => !m.seen).length > 0 && (
                         <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 rounded-full border-2 border-surface text-white text-[10px] font-bold flex items-center justify-center">
                             {messages.filter(m => !m.seen).length}
@@ -181,13 +189,13 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                     )}
                 </button>
 
-                {/* User Avatar */}
+                {/* User/Premium */}
                 <button
                     onClick={onProfileClick}
-                    className="btn-ghost px-3 py-2 text-sm font-semibold gap-1.5"
+                    className="btn-ghost p-2 md:px-2.5 md:py-2 text-sm font-semibold gap-1.5"
                 >
                     <User className="w-4 h-4" />
-                    <span className="hidden sm:inline">{t('premiumAccount')}</span>
+                    <span className="hidden md:inline">{t('premiumAccount')}</span>
                 </button>
             </div>
         </header>
