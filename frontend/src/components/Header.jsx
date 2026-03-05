@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Copy, RefreshCw, Check, Bell, Search, History, ChevronRight, User, Moon, Sun, Globe, Menu } from 'lucide-react';
+import { Mail, Copy, RefreshCw, Check, Bell, Search, History, ChevronRight, User, Moon, Sun, Globe, Menu, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useTheme } from '../ThemeProvider';
 import { useI18n } from '../i18n';
@@ -12,6 +12,8 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
     const { theme, toggleTheme } = useTheme();
     const { t, lang, setLang, LANGUAGES } = useI18n();
 
+    const unreadCount = messages.filter(m => !m.seen).length;
+
     const handleCopy = () => {
         if (account?.address) {
             navigator.clipboard.writeText(account.address);
@@ -20,25 +22,27 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
         }
     };
 
+    const closeMobileMenu = () => setShowMobileMenu(false);
+
     return (
-        <header className="bg-surface border-b border-border px-3 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-50">
+        <header className="bg-surface border-b border-border px-3 sm:px-5 py-3 flex items-center justify-between sticky top-0 z-50 relative">
             {/* Left: Logo */}
             <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0" onClick={onLogoClick}>
                 <div className="bg-primary p-1.5 rounded-lg">
                     <Mail className="w-5 h-5 text-white" />
                 </div>
-                <h1 className="text-lg sm:text-xl font-bold text-textMain tracking-tight hidden sm:block">
+                <h1 className="text-lg font-bold text-textMain tracking-tight hidden sm:block">
                     TempyMail
                 </h1>
             </div>
 
             {/* Middle: Email address bar */}
-            <div className="flex flex-1 max-w-lg mx-2 sm:mx-6">
+            <div className="flex flex-1 mx-2 sm:mx-4 max-w-md">
                 <div className="relative w-full flex items-center">
                     <div className="absolute left-3 text-textMuted">
                         <Search className="w-4 h-4" />
                     </div>
-                    <div className="w-full bg-surfaceHover border border-border rounded-lg py-2 pl-10 pr-12 text-xs sm:text-sm text-textMain font-mono font-medium truncate">
+                    <div className="w-full bg-surfaceHover border border-border rounded-lg py-2 pl-9 pr-10 text-xs sm:text-sm text-textMain font-mono font-medium truncate">
                         {account?.address || t('generatingAddress')}
                     </div>
                     <button
@@ -51,68 +55,121 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                 </div>
             </div>
 
-            {/* Right: Actions */}
-            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                {/* Mobile Important Actions (hidden on lg) */}
-                <div className="flex items-center gap-0.5 md:gap-1 lg:hidden">
+            {/* Right side */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+
+                {/* === MOBILE LAYOUT (hidden on md and above) === */}
+                <div className="flex items-center gap-1 md:hidden">
+                    {/* Change Email - icon */}
                     <button
                         onClick={generateAccount}
-                        className="btn-ghost p-1.5 sm:p-2 relative group"
+                        className="btn-ghost p-2"
                         title={t('changeEmail')}
                     >
-                        <RefreshCw className="w-5 h-5 text-textMain group-hover:text-primary transition-colors" />
+                        <RefreshCw className="w-5 h-5" />
                     </button>
+
+                    {/* Refresh Inbox - icon with badge */}
                     <button
-                        onClick={() => {
-                            refreshInbox();
-                            if (markAllAsSeen) markAllAsSeen();
-                        }}
-                        className="btn-ghost p-1.5 sm:p-2 relative group"
+                        onClick={() => { refreshInbox(); if (markAllAsSeen) markAllAsSeen(); }}
+                        className="btn-ghost p-2 relative"
                         title={t('refreshNotif')}
                     >
-                        <Bell className="w-5 h-5 text-textMain group-hover:text-primary transition-colors" />
-                        {messages.filter(m => !m.seen).length > 0 && (
-                            <span className="absolute -top-0.5 right-0 min-w-[18px] h-[18px] bg-red-500 rounded-full border-2 border-surface text-white text-[10px] font-bold flex items-center justify-center">
-                                {messages.filter(m => !m.seen).length}
+                        <Bell className="w-5 h-5" />
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] bg-red-500 rounded-full border-2 border-surface text-white text-[9px] font-bold flex items-center justify-center">
+                                {unreadCount}
                             </span>
                         )}
                     </button>
+
+                    {/* Dark mode toggle */}
+                    <button onClick={toggleTheme} className="btn-ghost p-2" title={theme === 'dark' ? t('lightMode') : t('darkMode')}>
+                        {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5" />}
+                    </button>
+
+                    {/* Burger Menu */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowMobileMenu(!showMobileMenu)}
+                            className={`btn-ghost p-2 transition-colors ${showMobileMenu ? 'text-primary bg-surfaceHover' : ''}`}
+                            title="Menu"
+                        >
+                            {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                        </button>
+
+                        {showMobileMenu && (
+                            <>
+                                <div className="fixed inset-0 z-40" onClick={closeMobileMenu} />
+                                <div className="absolute right-0 top-full mt-2 w-52 bg-surface border border-border rounded-xl shadow-2xl z-50 overflow-hidden py-1">
+                                    {/* Session History */}
+                                    <button
+                                        onClick={() => { closeMobileMenu(); setTimeout(() => setShowHistory(true), 50); }}
+                                        className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-surfaceHover text-textMain transition-colors flex items-center gap-3"
+                                    >
+                                        <History className="w-4 h-4 text-textMuted" />
+                                        {t('sessionHistory')}
+                                    </button>
+
+                                    {/* Premium / Profile */}
+                                    <button
+                                        onClick={() => { onProfileClick(); closeMobileMenu(); }}
+                                        className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-surfaceHover text-textMain transition-colors flex items-center gap-3"
+                                    >
+                                        <User className="w-4 h-4 text-textMuted" />
+                                        {t('premiumAccount')}
+                                    </button>
+
+                                    <div className="border-t border-border my-1" />
+
+                                    {/* Language heading */}
+                                    <div className="px-4 py-2 text-xs font-semibold text-textMuted uppercase tracking-widest flex items-center gap-2">
+                                        <Globe className="w-3.5 h-3.5" />
+                                        {t('language')}
+                                    </div>
+
+                                    {LANGUAGES.map((l) => (
+                                        <button
+                                            key={l.code}
+                                            onClick={() => { setLang(l.code); closeMobileMenu(); }}
+                                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-2 ${lang === l.code ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-surfaceHover text-textMain'}`}
+                                        >
+                                            <span>{l.flag}</span>
+                                            {l.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
 
-                {/* Dark Mode Toggle - always icon */}
-                <button
-                    onClick={toggleTheme}
-                    className="btn-ghost p-2"
-                    title={theme === 'dark' ? t('lightMode') : t('darkMode')}
-                >
-                    {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5" />}
-                </button>
-
-                {/* Desktop Actions (hidden on lg and below) */}
-                <div className="hidden lg:flex items-center gap-1 xl:gap-2">
+                {/* === DESKTOP LAYOUT (hidden below md) === */}
+                <div className="hidden md:flex items-center gap-0.5">
                     {/* Change Email */}
-                    <button onClick={generateAccount} className="btn-ghost text-sm px-3 py-2 font-semibold">
+                    <button onClick={generateAccount} className="btn-ghost px-3 py-2 text-sm font-semibold whitespace-nowrap">
                         {t('changeEmail')}
                     </button>
 
-                    {/* Language Selector */}
+                    {/* Language selector */}
                     <div className="relative">
                         <button
                             onClick={() => setShowLangMenu(!showLangMenu)}
-                            className={`btn-ghost px-3 py-2 text-sm font-semibold transition-colors ${showLangMenu ? 'bg-surfaceHover text-primary' : ''}`}
+                            className={`btn-ghost px-3 py-2 text-sm font-semibold whitespace-nowrap transition-colors ${showLangMenu ? 'bg-surfaceHover text-primary' : ''}`}
                         >
-                            {LANGUAGES.find(l => l.code === lang)?.name}
+                            {LANGUAGES.find(l => l.code === lang)?.name || 'Language'}
                         </button>
                         {showLangMenu && (
                             <>
-                                <div className="fixed inset-0 z-40" onClick={() => setShowLangMenu(false)}></div>
-                                <div className="absolute right-0 top-full mt-2 w-44 dashboard-panel shadow-lg z-50 overflow-hidden text-left origin-top-right p-1.5 border border-border/40">
+                                <div className="fixed inset-0 z-40" onClick={() => setShowLangMenu(false)} />
+                                <div className="absolute right-0 top-full mt-2 w-40 bg-surface border border-border rounded-xl shadow-xl z-50 overflow-hidden py-1">
                                     {LANGUAGES.map((l) => (
                                         <button
                                             key={l.code}
                                             onClick={() => { setLang(l.code); setShowLangMenu(false); }}
-                                            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors ${lang === l.code ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-surfaceHover text-textMain'}`}
+                                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-2 ${lang === l.code ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-surfaceHover text-textMain'}`}
                                         >
+                                            <span>{l.flag}</span>
                                             {l.name}
                                         </button>
                                     ))}
@@ -121,105 +178,54 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                         )}
                     </div>
 
-                    {/* History Button */}
+                    {/* Session History */}
                     <button
                         onClick={() => setShowHistory(!showHistory)}
-                        className={`btn-ghost px-3 py-2 text-sm font-semibold transition-colors ${showHistory ? 'bg-surfaceHover text-primary' : ''}`}
+                        className={`btn-ghost px-3 py-2 text-sm font-semibold whitespace-nowrap transition-colors ${showHistory ? 'bg-surfaceHover text-primary' : ''}`}
                     >
                         {t('sessionHistory')}
                     </button>
 
-                    {/* Notifications */}
+                    {/* Refresh / Notifications */}
                     <button
-                        onClick={() => {
-                            refreshInbox();
-                            if (markAllAsSeen) markAllAsSeen();
-                        }}
-                        className="btn-ghost px-3 py-2 text-sm font-semibold relative"
+                        onClick={() => { refreshInbox(); if (markAllAsSeen) markAllAsSeen(); }}
+                        className="btn-ghost px-3 py-2 text-sm font-semibold whitespace-nowrap relative"
                     >
                         {t('refreshNotif').split(' ')[0]}
-                        {messages.filter(m => !m.seen).length > 0 && (
-                            <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 bg-red-500 rounded-full border-2 border-surface text-white text-[10px] font-bold flex items-center justify-center">
-                                {messages.filter(m => !m.seen).length}
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full border-2 border-surface text-white text-[10px] font-bold flex items-center justify-center">
+                                {unreadCount}
                             </span>
                         )}
                     </button>
 
-                    {/* User/Premium */}
+                    {/* Premium / Profile */}
                     <button
                         onClick={onProfileClick}
-                        className="btn-ghost px-3 py-2 text-sm font-semibold"
+                        className="btn-ghost px-3 py-2 text-sm font-semibold whitespace-nowrap"
                     >
                         {t('premiumAccount')}
                     </button>
-                </div>
 
-                {/* Mobile Menu Toggle (lg and below) */}
-                <div className="relative lg:hidden">
-                    <button
-                        onClick={() => setShowMobileMenu(!showMobileMenu)}
-                        className={`btn-ghost p-1.5 sm:p-2 transition-colors ${showMobileMenu ? 'bg-surfaceHover text-primary' : ''}`}
-                        title="Menu"
-                    >
-                        <Menu className="w-6 h-6 text-textMain" />
+                    {/* Dark mode toggle - always icon */}
+                    <button onClick={toggleTheme} className="btn-ghost p-2 ml-1" title={theme === 'dark' ? t('lightMode') : t('darkMode')}>
+                        {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5" />}
                     </button>
-
-                    {showMobileMenu && (
-                        <>
-                            <div className="fixed inset-0 z-40" onClick={() => setShowMobileMenu(false)} />
-                            <div className="absolute right-0 top-full mt-2 w-56 dashboard-panel shadow-xl z-50 overflow-hidden text-left origin-top-right py-2 border border-border flex flex-col">
-                                <button
-                                    onClick={() => {
-                                        setShowMobileMenu(false);
-                                        setTimeout(() => setShowHistory(true), 10);
-                                    }}
-                                    className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-surfaceHover text-textMain transition-colors flex items-center gap-2"
-                                >
-                                    <History className="w-4 h-4" />
-                                    {t('sessionHistory')}
-                                </button>
-
-                                <button
-                                    onClick={() => { onProfileClick(); setShowMobileMenu(false); }}
-                                    className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-surfaceHover text-textMain transition-colors border-b border-border/50 pb-4 flex items-center gap-2"
-                                >
-                                    <User className="w-4 h-4" />
-                                    {t('premiumAccount')}
-                                </button>
-
-                                {/* Languages inside Mobile Menu */}
-                                <div className="px-4 py-2 mt-2 text-xs font-bold text-textMuted uppercase tracking-wider">
-                                    {t('language')}
-                                </div>
-                                {LANGUAGES.map((l) => (
-                                    <button
-                                        key={l.code}
-                                        onClick={() => { setLang(l.code); setShowMobileMenu(false); }}
-                                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${lang === l.code ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-surfaceHover text-textMain font-medium'}`}
-                                    >
-                                        {l.name}
-                                    </button>
-                                ))}
-                            </div>
-                        </>
-                    )}
                 </div>
             </div>
 
-            {/* History Dropdown (Shared for Mobile and Desktop) */}
+            {/* History Dropdown (shared - fixed position from header) */}
             {showHistory && (
                 <>
-                    <div className="fixed inset-0 z-40" onClick={() => setShowHistory(false)}></div>
-                    <div className="absolute right-3 sm:right-6 top-16 mt-1 w-80 dashboard-panel shadow-xl z-50 overflow-hidden text-left origin-top-right border border-border">
+                    <div className="fixed inset-0 z-40" onClick={() => setShowHistory(false)} />
+                    <div className="absolute right-3 sm:right-5 top-full mt-2 w-80 bg-surface border border-border rounded-xl shadow-2xl z-50 overflow-hidden">
                         <div className="p-4 border-b border-border bg-surfaceHover/50">
-                            <h3 className="font-bold text-textMain text-sm mb-1">{t('recentInboxes')}</h3>
-                            <p className="text-xs text-textMuted">{t('recoverPast')}</p>
+                            <h3 className="font-bold text-textMain text-sm">{t('recentInboxes')}</h3>
+                            <p className="text-xs text-textMuted mt-0.5">{t('recoverPast')}</p>
                         </div>
                         <div className="max-h-64 overflow-y-auto hide-scrollbar p-2">
                             {history.length === 0 ? (
-                                <div className="p-4 text-center text-textMuted text-sm">
-                                    {t('noRecentInboxes')}
-                                </div>
+                                <div className="p-4 text-center text-textMuted text-sm">{t('noRecentInboxes')}</div>
                             ) : (
                                 history.map((item) => {
                                     const isActive = item.address === account?.address;
@@ -227,28 +233,22 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                                         <button
                                             key={item.id}
                                             onClick={() => {
-                                                if (!isActive) {
-                                                    recoverAccount(item.address);
-                                                    setShowHistory(false);
-                                                }
+                                                if (!isActive) { recoverAccount(item.address); setShowHistory(false); }
                                             }}
                                             disabled={isActive}
-                                            className={`w-full text-left p-3 rounded-lg flex items-center justify-between transition-colors ${isActive
-                                                ? 'bg-primary/10 border border-primary/20 cursor-default'
-                                                : 'hover:bg-surfaceHover border border-transparent'
-                                                }`}
+                                            className={`w-full text-left p-3 rounded-lg flex items-center justify-between transition-colors ${isActive ? 'bg-primary/10 border border-primary/20 cursor-default' : 'hover:bg-surfaceHover border border-transparent'}`}
                                         >
                                             <div className="overflow-hidden pr-2">
                                                 <p className={`font-mono font-medium text-sm truncate ${isActive ? 'text-primary' : 'text-textMain'}`}>
                                                     {item.address}
                                                 </p>
-                                                <p className="text-xs text-textMuted mt-1">
+                                                <p className="text-xs text-textMuted mt-0.5">
                                                     {isActive ? t('currentSession') : formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
                                                 </p>
                                             </div>
-                                            {!isActive && <ChevronRight className="w-4 h-4 text-textMuted" />}
+                                            {!isActive && <ChevronRight className="w-4 h-4 text-textMuted flex-shrink-0" />}
                                         </button>
-                                    )
+                                    );
                                 })
                             )}
                         </div>
