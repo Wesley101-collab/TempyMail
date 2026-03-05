@@ -301,12 +301,14 @@ export default function MessageViewer({ message, loading, onDelete, onBack }) {
                 {/* Email Body */}
                 <div className="max-w-4xl">
                     {message.html && message.html.length > 0 ? (
-                        <div
-                            className="prose prose-sm sm:prose-base max-w-none prose-a:text-primary hover:prose-a:text-secondary prose-img:rounded-xl prose-img:border prose-img:border-border prose-headings:text-textMain prose-p:text-gray-700"
-                            dangerouslySetInnerHTML={{ __html: message.html[0] }}
-                        />
+                        <div className="rounded-xl overflow-hidden border border-border">
+                            <div
+                                className="bg-white p-4 prose prose-sm sm:prose-base max-w-none"
+                                dangerouslySetInnerHTML={{ __html: message.html[0] }}
+                            />
+                        </div>
                     ) : (
-                        <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed text-sm">
+                        <pre className="whitespace-pre-wrap font-sans text-textMain leading-relaxed text-sm">
                             {message.text}
                         </pre>
                     )}
@@ -337,7 +339,7 @@ export default function MessageViewer({ message, loading, onDelete, onBack }) {
                                         {format(new Date(reply.createdAt), 'MMM d, yyyy h:mm a')}
                                     </div>
                                 </div>
-                                <pre className="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed text-sm mt-3 pt-3 border-t border-border">
+                                <pre className="whitespace-pre-wrap font-sans text-textMain leading-relaxed text-sm mt-3 pt-3 border-t border-border">
                                     {reply.text}
                                 </pre>
                             </div>
