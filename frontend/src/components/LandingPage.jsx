@@ -9,26 +9,26 @@ export default function LandingPage({ onGetStarted, loading }) {
         <div className="min-h-screen flex flex-col bg-background relative overflow-hidden text-textMain">
 
             {/* Header / Navbar */}
-            <header className="bg-surface border-b border-border px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+            <header className="bg-surface border-b border-border px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0 z-50">
                 <div className="flex items-center gap-2">
                     <div className="bg-primary p-1.5 rounded-lg">
                         <Mail className="w-5 h-5 text-white" />
                     </div>
-                    <h1 className="text-xl font-bold tracking-tight">TempyMail</h1>
+                    <h1 className="text-lg sm:text-xl font-bold tracking-tight">TempyMail</h1>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <a href="#features" className="text-sm font-medium text-textMuted hover:text-textMain transition-colors hidden sm:block">Features</a>
                     <a href="#pricing" className="text-sm font-medium text-textMuted hover:text-textMain transition-colors hidden sm:block">Pricing</a>
                     <button
                         onClick={() => { window.history.pushState({}, '', '/premium'); window.location.reload(); }}
-                        className="text-sm font-bold text-primary hover:text-secondary transition-colors"
+                        className="text-xs sm:text-sm font-bold text-primary hover:text-secondary transition-colors"
                     >
                         Login
                     </button>
                     <button
                         onClick={onGetStarted}
                         disabled={loading}
-                        className="btn-primary px-4 py-2 text-sm font-bold shadow-sm"
+                        className="btn-primary px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold shadow-sm"
                     >
                         Try Free
                     </button>
@@ -36,44 +36,44 @@ export default function LandingPage({ onGetStarted, loading }) {
             </header>
 
             {/* Hero Section */}
-            <section className="flex-1 flex flex-col items-center justify-center p-6 pt-24 pb-16 text-center">
+            <section className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 pt-12 sm:pt-24 pb-10 sm:pb-16 text-center">
                 <div className="relative z-10 max-w-4xl w-full">
 
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 text-primary text-sm font-bold mb-8 border border-green-200">
-                        <Sparkles className="w-4 h-4" />
+                    <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-green-50 text-primary text-xs sm:text-sm font-bold mb-6 sm:mb-8 border border-green-200">
+                        <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         <span>Now with AI Summaries, Forwarding & Reply</span>
                     </div>
 
-                    <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight leading-tight text-gray-900">
+                    <h1 className="text-3xl sm:text-5xl md:text-7xl font-extrabold mb-4 sm:mb-6 tracking-tight leading-tight text-gray-900">
                         Your private inbox,<br />
                         <span className="text-primary">instantly ready.</span>
                     </h1>
 
-                    <p className="text-textMuted text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-textMuted text-sm sm:text-lg md:text-xl mb-6 sm:mb-10 max-w-2xl mx-auto leading-relaxed">
                         Keep your real inbox clean and secure. Generate a disposable email address in one click — with custom aliases, forwarding, attachments, and reply support.
                     </p>
 
                     <button
                         onClick={onGetStarted}
                         disabled={loading}
-                        className="btn-primary px-10 py-4 text-lg gap-3 disabled:opacity-50 disabled:cursor-wait mx-auto hover:-translate-y-1 transition-transform shadow-lg shadow-green-500/20"
+                        className="btn-primary px-6 sm:px-10 py-3 sm:py-4 text-sm sm:text-lg gap-2 sm:gap-3 disabled:opacity-50 disabled:cursor-wait mx-auto hover:-translate-y-1 transition-transform shadow-lg shadow-green-500/20"
                     >
                         {loading ? (
                             <>
-                                <RefreshCcw className="w-6 h-6 animate-spin" />
+                                <RefreshCcw className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" />
                                 <span>Generating...</span>
                             </>
                         ) : (
                             <>
-                                <Mail className="w-6 h-6" />
+                                <Mail className="w-5 h-5 sm:w-6 sm:h-6" />
                                 <span>Get Your Temporary Email</span>
-                                <ArrowRight className="w-5 h-5 ml-1" />
+                                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-1" />
                             </>
                         )}
                     </button>
 
                     {/* Feature Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left mt-24">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-left mt-12 sm:mt-24">
                         <div className="dashboard-card p-8 group hover:shadow-md transition-shadow">
                             <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center mb-6 border border-blue-100 group-hover:scale-110 transition-transform">
                                 <Zap className="w-6 h-6" />
@@ -100,14 +100,14 @@ export default function LandingPage({ onGetStarted, loading }) {
             </section>
 
             {/* Premium Features Grid */}
-            <section className="w-full bg-surface border-y border-border py-24" id="features">
-                <div className="max-w-5xl mx-auto px-6">
+            <section className="w-full bg-surface border-y border-border py-12 sm:py-24" id="features">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-900">Premium Superpowers</h2>
                         <p className="text-textMuted text-lg max-w-2xl mx-auto">Everything you need for complete disposable email control.</p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
                         <FeatureCard icon={AtSign} color="blue" title="Custom Aliases" desc="Choose your own username like myname@vredobox.cc" />
                         <FeatureCard icon={Inbox} color="green" title="Multiple Inboxes" desc="Run up to 5 inboxes simultaneously" />
                         <FeatureCard icon={Forward} color="purple" title="Email Forwarding" desc="Auto-forward incoming mail to your real inbox" />
@@ -121,14 +121,14 @@ export default function LandingPage({ onGetStarted, loading }) {
             </section>
 
             {/* Pricing Section */}
-            <section className="w-full bg-background py-24" id="pricing">
-                <div className="max-w-5xl mx-auto px-6">
+            <section className="w-full bg-background py-12 sm:py-24" id="pricing">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-extrabold mb-4 text-gray-900">Simple, transparent pricing</h2>
                         <p className="text-textMuted text-lg max-w-2xl mx-auto">Start free. Upgrade when you need more power.</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto px-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
                         {/* Free Plan */}
                         <div className="dashboard-card p-8 flex flex-col">
                             <h3 className="text-xl font-bold text-gray-900 mb-2">Free Plan</h3>

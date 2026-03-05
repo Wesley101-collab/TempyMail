@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useMail } from './hooks/useMail';
 import Header from './components/Header';
+import { Home } from 'lucide-react';
 import Inbox from './components/Inbox';
 import MessageViewer from './components/MessageViewer';
 import LandingPage from './components/LandingPage';
@@ -132,10 +133,19 @@ function App() {
             <div className="w-10 h-10 border-4 border-red-500 rounded-full flex items-center justify-center pb-1 text-red-400 font-bold text-xl">!</div>
           </div>
           <h2 className="text-2xl font-bold text-red-400 mb-4 tracking-tight">API Connection Error</h2>
-          <p className="text-textMuted mb-8 leading-relaxed font-medium">{error}</p>
-          <button onClick={generateAccount} className="glass-button w-full px-6 py-3 font-semibold tracking-wide text-lg shadow-lg">
-            Retry Connection
-          </button>
+          <p className="text-textMuted mb-6 leading-relaxed font-medium">{error}</p>
+          <div className="flex flex-col gap-3">
+            <button onClick={generateAccount} className="glass-button w-full px-6 py-3 font-semibold tracking-wide text-lg shadow-lg">
+              Retry Connection
+            </button>
+            <button
+              onClick={handleGoHome}
+              className="w-full px-6 py-3 rounded-xl border border-border bg-surface hover:bg-surfaceHover text-textMain font-semibold transition-colors flex items-center justify-center gap-2"
+            >
+              <Home className="w-4 h-4" />
+              Go to Homepage
+            </button>
+          </div>
         </div>
       </div>
     );
