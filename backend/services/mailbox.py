@@ -73,9 +73,9 @@ def get_message(message_id: str) -> dict:
         (message_id,)
     )
     row = cursor.fetchone()
-    conn.close()
     
     if not row:
+        conn.close()
         return None
     
     # Fetch replies
