@@ -66,6 +66,19 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                         {t('changeEmail')}
                     </button>
 
+                    {/* Refresh - right next to Change Email */}
+                    <button
+                        onClick={() => { refreshInbox(); if (markAllAsSeen) markAllAsSeen(); }}
+                        className="btn-ghost px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap rounded-lg hover:bg-surfaceHover transition-colors text-textMain relative"
+                    >
+                        {t('refreshNotif').split(' ')[0]}
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center px-0.5">
+                                {unreadCount}
+                            </span>
+                        )}
+                    </button>
+
                     {/* Language */}
                     <div className="relative">
                         <button
@@ -99,23 +112,13 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                         {t('sessionHistory')}
                     </button>
 
-                    <button
-                        onClick={() => { refreshInbox(); if (markAllAsSeen) markAllAsSeen(); }}
-                        className="btn-ghost px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap rounded-lg hover:bg-surfaceHover transition-colors text-textMain relative"
-                    >
-                        {t('refreshNotif').split(' ')[0]}
-                        {unreadCount > 0 && (
-                            <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center px-0.5">
-                                {unreadCount}
-                            </span>
-                        )}
-                    </button>
 
                     <button
                         onClick={onProfileClick}
-                        className="btn-ghost px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap rounded-lg hover:bg-surfaceHover transition-colors text-textMain"
+                        className="btn-ghost p-1.5 rounded-lg hover:bg-surfaceHover transition-colors text-textMain"
+                        title={t('premiumAccount')}
                     >
-                        {t('premiumAccount')}
+                        <User className="w-4 h-4" />
                     </button>
 
                     {/* Dark mode - icon only */}
