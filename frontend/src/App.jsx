@@ -26,6 +26,7 @@ function App() {
     goHome,
     history,
     recoverAccount,
+    clearError,
     markAllAsSeen
   } = useMail();
 
@@ -100,11 +101,11 @@ function App() {
     return <AdminDashboard onBack={handleGoToEmail} />;
   }
 
-  // Premium Auth
+  // Premium Auth — back goes to landing (not dashboard)
   if (page === 'premium') {
     return (
       <PremiumAuth
-        onBack={handleGoToEmail}
+        onBack={handleGoToLanding}
         onSuccess={(user) => navigateTo('profile', '/profile')}
       />
     );
@@ -144,7 +145,7 @@ function App() {
               Retry Connection
             </button>
             <button
-              onClick={handleGoToEmail}
+              onClick={() => { clearError(); handleGoToEmail(); }}
               className="w-full px-6 py-3 rounded-xl border border-border bg-surface hover:bg-surfaceHover text-textMain font-semibold transition-colors flex items-center justify-center gap-2"
             >
               <Home className="w-4 h-4" />
@@ -163,7 +164,7 @@ function App() {
         account={account}
         generateAccount={generateAccount}
         refreshInbox={refreshInbox}
-        onLogoClick={handleGoToEmail}
+        onLogoClick={handleGoHome}
         history={history}
         recoverAccount={recoverAccount}
         messages={messages}

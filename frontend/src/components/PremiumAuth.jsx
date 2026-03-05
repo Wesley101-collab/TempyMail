@@ -3,7 +3,7 @@ import { Shield, Mail, Lock, ArrowLeft, Loader2, Crown, Check, Sparkles } from '
 import { api } from '../services/api';
 
 export default function PremiumAuth({ onBack, onSuccess }) {
-    const [mode, setMode] = useState('login'); // 'login' | 'signup'
+    const [mode, setMode] = useState('signup'); // 'login' | 'signup'
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);

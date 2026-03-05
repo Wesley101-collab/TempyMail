@@ -210,6 +210,7 @@ export const useMail = () => {
         goHome,
         history,
         recoverAccount,
-        markAllAsSeen
+        markAllAsSeen,
+        clearError: () => setError(null)
     };
 };
