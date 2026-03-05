@@ -1,7 +1,9 @@
 fastapi
-uvicorn
+uvicorn[standard]
+gunicorn
 httpx
 pydantic
 beautifulsoup4
 bcrypt
 python-dotenv
+python-multipart
