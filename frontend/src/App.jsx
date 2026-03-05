@@ -81,6 +81,11 @@ function App() {
     navigateTo('landing', '/');
   };
 
+  // Navigate to landing without clearing temp mail session (used after premium logout)
+  const handleGoToLanding = () => {
+    navigateTo('landing', '/');
+  };
+
   const handleGoToEmail = () => {
     navigateTo('email', '/');
   };
@@ -110,7 +115,7 @@ function App() {
     return (
       <ProfilePage
         onBack={handleGoToEmail}
-        onLogout={handleGoToEmail}
+        onLogout={handleGoToLanding}
       />
     );
   }
@@ -139,7 +144,7 @@ function App() {
               Retry Connection
             </button>
             <button
-              onClick={handleGoHome}
+              onClick={handleGoToEmail}
               className="w-full px-6 py-3 rounded-xl border border-border bg-surface hover:bg-surfaceHover text-textMain font-semibold transition-colors flex items-center justify-center gap-2"
             >
               <Home className="w-4 h-4" />
@@ -158,7 +163,7 @@ function App() {
         account={account}
         generateAccount={generateAccount}
         refreshInbox={refreshInbox}
-        onLogoClick={handleGoHome}
+        onLogoClick={handleGoToEmail}
         history={history}
         recoverAccount={recoverAccount}
         messages={messages}
