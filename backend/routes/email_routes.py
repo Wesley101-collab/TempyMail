@@ -4,9 +4,13 @@ from services import mailbox
 from services.database import get_connection
 import httpx
 import os
+from typing import Optional
 
 class SummarizeRequest(BaseModel):
     text: str
+
+class AccountRequest(BaseModel):
+    recaptcha_token: Optional[str] = None
 
 router = APIRouter()
 
@@ -14,6 +18,21 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 FREE_DAILY_LIMIT = 3
+RECAPTCHA_SECRET = os.getenv("RECAPTCHA_SECRET_KEY", "")
+
+
+async def verify_recaptcha(token: str) -> bool:
+    """Verify a reCAPTCHA v3 token. Returns True if human, False if bot."""
+    if not token or not RECAPTCHA_SECRET:
+        return True  # Allow if no token or key (dev mode)
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            "https://www.google.com/recaptcha/api/siteverify",
+            data={"secret": RECAPTCHA_SECRET, "response": token},
+        )
+        result = resp.json()
+        # v3 returns a score: >= 0.5 is likely human
+        return result.get("success", False) and result.get("score", 0) >= 0.5
 
 
 def _count_accounts_today(ip: str) -> int:
@@ -30,9 +49,15 @@ def _count_accounts_today(ip: str) -> int:
 # --- Email Routes ---
 
 @router.post("/accounts")
-async def create_account(request: Request):
+async def create_account(request: Request, body: AccountRequest = None):
     """Generates a new random email address on vredobox.cc."""
     try:
+        # Verify reCAPTCHA token if provided
+        recaptcha_token = (body.recaptcha_token if body else None) or ""
+        is_human = await verify_recaptcha(recaptcha_token)
+        if not is_human:
+            raise HTTPException(status_code=403, detail="Bot detected. Please try again.")
+
         # Extract IP, preferring Cloudflare header (fallback to standard headers)
         client_ip = request.headers.get("cf-connecting-ip")
         if not client_ip:
@@ -53,6 +78,8 @@ async def create_account(request: Request):
         data["remaining_today"] = max(0, FREE_DAILY_LIMIT - (count + 1))
         data["daily_limit"] = FREE_DAILY_LIMIT
         return data
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

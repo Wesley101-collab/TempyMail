@@ -39,7 +39,26 @@ export const useMail = () => {
         setLoading(true);
         setError(null);
         try {
-            const { data } = await api.post('/accounts');
+            // Get reCAPTCHA v3 token (invisible)
+            let recaptchaToken = '';
+            try {
+                recaptchaToken = await new Promise((resolve, reject) => {
+                    if (window.grecaptcha) {
+                        window.grecaptcha.ready(() => {
+                            window.grecaptcha
+                                .execute('6Ler9YAsAAAAALRZZwFXk0vem0bPneA3__mAxzcZ', { action: 'create_account' })
+                                .then(resolve)
+                                .catch(reject);
+                        });
+                    } else {
+                        resolve(''); // Allow if reCAPTCHA not loaded (dev mode)
+                    }
+                });
+            } catch (e) {
+                console.warn('reCAPTCHA failed, proceeding without token');
+            }
+
+            const { data } = await api.post('/accounts', { recaptcha_token: recaptchaToken });
             localStorage.setItem('mail_address', data.address);
             localStorage.setItem('mail_id', data.id);
 
