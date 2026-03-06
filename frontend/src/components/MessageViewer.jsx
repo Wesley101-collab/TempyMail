@@ -301,12 +301,19 @@ export default function MessageViewer({ message, loading, onDelete, onBack }) {
                 {/* Email Body */}
                 <div className="max-w-4xl">
                     {message.html && message.html.length > 0 ? (
-                        <div className="rounded-xl overflow-hidden border border-border">
-                            <div
-                                className="bg-white p-4 prose prose-sm sm:prose-base max-w-none"
-                                dangerouslySetInnerHTML={{ __html: message.html[0] }}
-                            />
-                        </div>
+                        <iframe
+                            srcDoc={message.html[0]}
+                            title="Email content"
+                            sandbox="allow-same-origin"
+                            className="w-full rounded-xl border border-border bg-white"
+                            style={{ minHeight: '200px' }}
+                            onLoad={(e) => {
+                                try {
+                                    const doc = e.target.contentWindow.document;
+                                    e.target.style.height = doc.documentElement.scrollHeight + 'px';
+                                } catch { }
+                            }}
+                        />
                     ) : (
                         <pre className="whitespace-pre-wrap font-sans text-textMain leading-relaxed text-sm">
                             {message.text}
