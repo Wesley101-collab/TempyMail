@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Mail, Copy, RefreshCw, Check, Bell, Search, History, ChevronRight, User, Moon, Sun, Globe, Menu, X, QrCode, Phone } from 'lucide-react';
+import { MageRefresh } from './MageIcons';
 import { formatDistanceToNow } from 'date-fns';
 import { useTheme } from '../ThemeProvider';
 import { useI18n } from '../i18n';
@@ -94,9 +95,10 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                     {/* Refresh - right next to Change Email */}
                     <button
                         onClick={() => { refreshInbox(); if (markAllAsSeen) markAllAsSeen(); }}
-                        className="btn-ghost px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap rounded-lg hover:bg-surfaceHover transition-colors text-textMain relative"
+                        className="btn-ghost p-1.5 rounded-lg hover:bg-surfaceHover transition-colors text-textMain relative"
+                        title={t('refreshNotif')}
                     >
-                        {t('refreshNotif').split(' ')[0]}
+                        <MageRefresh className="w-4 h-4" />
                         {unreadCount > 0 && (
                             <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center px-0.5">
                                 {unreadCount}

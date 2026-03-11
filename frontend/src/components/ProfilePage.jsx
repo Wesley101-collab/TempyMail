@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {
     User, Mail, Shield, Crown, LogOut, ArrowLeft, Trash2, Clock,
     Loader2, AlertTriangle, Check, ChevronRight, Sparkles,
-    AtSign, Forward, Webhook, Plus, X, Copy, Inbox
+    AtSign, Forward, Webhook, Plus, X, Copy, Inbox, MessageCircle, ExternalLink
 } from 'lucide-react';
+import { MageEmail } from './MageIcons';
 import { api } from '../services/api';
 
 function SettingRow({ icon: Icon, label, description, children }) {
@@ -337,6 +338,33 @@ export default function ProfilePage({ onBack, onLogout }) {
                         <span className="flex items-center gap-3 text-sm font-semibold text-red-600"><Trash2 className="w-4 h-4 text-red-500" /> Delete Account</span>
                         <ChevronRight className="w-4 h-4 text-red-400 group-hover:translate-x-0.5 transition-transform" />
                     </button>
+                </div>
+
+                {/* Contact Me */}
+                <div className="dashboard-panel p-5 mb-5">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="bg-primary/10 p-2 rounded-xl">
+                            <MageEmail className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold text-textMain">Contact Us</h3>
+                            <p className="text-xs text-textMuted">Have questions, feedback, or need help?</p>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <a href="mailto:support@tempymail.site" className="w-full flex items-center justify-between p-3 rounded-xl bg-surfaceHover border border-border hover:border-primary/30 transition-colors group">
+                            <span className="flex items-center gap-3 text-sm font-semibold text-textMain">
+                                <Mail className="w-4 h-4 text-textMuted" /> support@tempymail.site
+                            </span>
+                            <ExternalLink className="w-3.5 h-3.5 text-textMuted group-hover:text-primary transition-colors" />
+                        </a>
+                        <a href="https://twitter.com/tempymail" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-between p-3 rounded-xl bg-surfaceHover border border-border hover:border-primary/30 transition-colors group">
+                            <span className="flex items-center gap-3 text-sm font-semibold text-textMain">
+                                <MessageCircle className="w-4 h-4 text-textMuted" /> @tempymail on X
+                            </span>
+                            <ExternalLink className="w-3.5 h-3.5 text-textMuted group-hover:text-primary transition-colors" />
+                        </a>
+                    </div>
                 </div>
 
                 {/* Delete Modal */}
