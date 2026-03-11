@@ -161,7 +161,9 @@ def _parse_messages_page(html: str):
             
             # Validate: skip if message text looks like navigation/header content
             skip_words = ["update messages", "give me another", "skip the signup", "chrome extension",
-                         "receive sms", "how to", "registration free", "advantages", "worldwide"]
+                         "receive sms", "how to", "registration free", "advantages", "worldwide",
+                         "click to copy", "mobile phone number", "refresh the page", "be aware",
+                         "please do not verify", "use our chrome"]
             if any(sw in msg_text.lower() for sw in skip_words):
                 continue
             if len(msg_text) < 3 or len(msg_text) > 500:
