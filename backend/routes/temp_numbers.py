@@ -100,39 +100,121 @@ def _parse_numbers_page(html: str):
 
 
 def _parse_messages_page(html: str):
-    """Parse a number's message page to extract received SMS."""
+    """Parse a number's message page to extract received SMS.
+    
+    receive-smss.com uses a div-based grid layout with Message/Sender/Time columns.
+    Each message block is a rounded box containing a .row with 3 columns.
+    """
     soup = BeautifulSoup(html, "html.parser")
     messages = []
     
-    # Look for message rows in the table
-    table = soup.find("table")
-    if not table:
-        # Try alternate structure — some pages use div-based layouts
-        msg_divs = soup.find_all("div", class_=re.compile(r"message|sms|row"))
-        for div in msg_divs:
-            text = div.get_text(separator=" ", strip=True)
-            if len(text) > 10:
-                messages.append({
-                    "sender": "Unknown",
-                    "text": text[:500],
-                    "time": ""
-                })
+    # Strategy 1: Find div blocks containing "Message", "Sender", "Time" labels
+    # Each message is in a container div with a grey background + row layout
+    all_rows = soup.find_all("div", class_=re.compile(r"row"))
+    
+    for row in all_rows:
+        cols = row.find_all("div", recursive=False)
+        if len(cols) < 2:
+            # Also try col-based classes
+            cols = row.find_all("div", class_=re.compile(r"col"))
+        
+        if len(cols) < 2:
+            continue
+        
+        # Extract text from each column, skip label text like "Message", "Sender", "Time"
+        col_texts = []
+        for col in cols:
+            # Get all text, remove known labels
+            text = col.get_text(separator="\n", strip=True)
+            lines = [l.strip() for l in text.split("\n") if l.strip()]
+            # Filter out label-only lines
+            filtered = [l for l in lines if l.lower() not in ("message", "sender", "time", "from")]
+            col_texts.append("\n".join(filtered))
+        
+        # We need at least message text and sender
+        if len(col_texts) >= 2 and any(len(t) > 3 for t in col_texts):
+            # Determine which column is which based on content/position
+            # Typical order: Sender | Message | Time  OR  Message | Sender | Time
+            msg_text = ""
+            sender = "Unknown"
+            time_str = ""
+            
+            if len(col_texts) >= 3:
+                # 3-column layout: could be [Sender, Message, Time] or [Message, Sender, Time]
+                # Heuristic: longest text is likely the message
+                lengths = [(len(t), i) for i, t in enumerate(col_texts)]
+                lengths.sort(reverse=True)
+                msg_idx = lengths[0][1]
+                msg_text = col_texts[msg_idx]
+                
+                remaining = [i for i in range(len(col_texts)) if i != msg_idx]
+                # Shortest remaining is likely the time
+                if len(col_texts[remaining[0]]) <= len(col_texts[remaining[1]]):
+                    time_str = col_texts[remaining[0]]
+                    sender = col_texts[remaining[1]]
+                else:
+                    time_str = col_texts[remaining[1]]
+                    sender = col_texts[remaining[0]]
+            elif len(col_texts) == 2:
+                msg_text = col_texts[0] if len(col_texts[0]) > len(col_texts[1]) else col_texts[1]
+                sender = col_texts[1] if len(col_texts[0]) > len(col_texts[1]) else col_texts[0]
+            
+            # Validate: skip if message text looks like navigation/header content
+            skip_words = ["update messages", "give me another", "skip the signup", "chrome extension",
+                         "receive sms", "how to", "registration free", "advantages", "worldwide"]
+            if any(sw in msg_text.lower() for sw in skip_words):
+                continue
+            if len(msg_text) < 3 or len(msg_text) > 500:
+                continue
+            # Skip if sender looks like a time
+            if "ago" in sender.lower():
+                sender, time_str = time_str, sender
+                if not sender:
+                    sender = "Unknown"
+            
+            messages.append({
+                "sender": sender[:100] or "Unknown",
+                "text": msg_text[:500],
+                "time": time_str[:50]
+            })
+    
+    if messages:
         return messages[:50]
     
-    rows = table.find_all("tr")
-    for row in rows[1:]:  # Skip header
-        cells = row.find_all("td")
-        if len(cells) >= 3:
-            sender = cells[0].get_text(strip=True)
-            msg_text = cells[1].get_text(strip=True)
-            time_str = cells[2].get_text(strip=True)
-            
-            if msg_text:
-                messages.append({
-                    "sender": sender or "Unknown",
-                    "text": msg_text[:500],
-                    "time": time_str
-                })
+    # Strategy 2: Table-based fallback
+    table = soup.find("table")
+    if table:
+        rows = table.find_all("tr")
+        for row in rows[1:]:
+            cells = row.find_all("td")
+            if len(cells) >= 3:
+                sender = cells[0].get_text(strip=True)
+                msg_text = cells[1].get_text(strip=True)
+                time_str = cells[2].get_text(strip=True)
+                if msg_text:
+                    messages.append({
+                        "sender": sender or "Unknown",
+                        "text": msg_text[:500],
+                        "time": time_str
+                    })
+    
+    # Strategy 3: Look for any repeated pattern with "ago" (time indicator)
+    if not messages:
+        ago_elements = soup.find_all(string=re.compile(r"\d+\s+(minute|hour|day|second)s?\s+ago"))
+        for el in ago_elements:
+            parent = el.find_parent("div")
+            if parent:
+                container = parent.find_parent("div")
+                if container:
+                    full_text = container.get_text(separator=" | ", strip=True)
+                    parts = [p.strip() for p in full_text.split("|") if p.strip()]
+                    parts = [p for p in parts if p.lower() not in ("message", "sender", "time")]
+                    if len(parts) >= 2:
+                        messages.append({
+                            "sender": parts[0][:100] if not "ago" in parts[0] else "Unknown",
+                            "text": next((p for p in parts if len(p) > 10 and "ago" not in p), parts[0])[:500],
+                            "time": next((p for p in parts if "ago" in p.lower()), "")[:50]
+                        })
     
     return messages[:50]
 
