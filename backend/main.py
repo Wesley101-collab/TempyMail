@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes.email_routes import router as email_router
 from routes.admin_routes import router as admin_router
 from routes.payment_routes import router as payment_router
+from routes.temp_numbers import router as temp_numbers_router
 
 app = FastAPI(title="TempyMail API", description="Self-hosted disposable email service")
 
@@ -21,6 +22,7 @@ app.add_middleware(
 app.include_router(email_router, prefix="/api", tags=["Email"])
 app.include_router(admin_router, prefix="/api", tags=["Admin"])
 app.include_router(payment_router, prefix="/api", tags=["Payment"])
+app.include_router(temp_numbers_router, prefix="/api", tags=["Temp Numbers"])
 
 @app.get("/")
 def health_check():

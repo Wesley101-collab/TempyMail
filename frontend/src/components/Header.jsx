@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Mail, Copy, RefreshCw, Check, Bell, Search, History, ChevronRight, User, Moon, Sun, Globe, Menu, X, QrCode } from 'lucide-react';
+import { Mail, Copy, RefreshCw, Check, Bell, Search, History, ChevronRight, User, Moon, Sun, Globe, Menu, X, QrCode, Phone } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useTheme } from '../ThemeProvider';
 import { useI18n } from '../i18n';
 import QRCode from 'qrcode';
 
-export default function Header({ account, generateAccount, refreshInbox, onLogoClick, history = [], recoverAccount, messages = [], onProfileClick, markAllAsSeen }) {
+export default function Header({ account, generateAccount, refreshInbox, onLogoClick, history = [], recoverAccount, messages = [], onProfileClick, onNumbersClick, markAllAsSeen }) {
     const [copied, setCopied] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
     const [showLangMenu, setShowLangMenu] = useState(false);
@@ -146,6 +146,13 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                         {t('sessionHistory')}
                     </button>
 
+                    <button
+                        onClick={onNumbersClick}
+                        className="btn-ghost p-1.5 rounded-lg hover:bg-surfaceHover transition-colors text-textMain"
+                        title="Temp Numbers"
+                    >
+                        <Phone className="w-4 h-4" />
+                    </button>
 
                     <button
                         onClick={onProfileClick}
@@ -219,6 +226,14 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                                     >
                                         <QrCode className="w-4 h-4 text-textMuted flex-shrink-0" />
                                         QR Code
+                                    </button>
+
+                                    <button
+                                        onClick={() => { onNumbersClick(); setShowMobileMenu(false); }}
+                                        className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-surfaceHover text-textMain transition-colors flex items-center gap-3"
+                                    >
+                                        <Phone className="w-4 h-4 text-textMuted flex-shrink-0" />
+                                        Temp Numbers
                                     </button>
 
                                     <button
