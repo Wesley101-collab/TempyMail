@@ -358,12 +358,6 @@ export default function ProfilePage({ onBack, onLogout }) {
                             </span>
                             <ExternalLink className="w-3.5 h-3.5 text-textMuted group-hover:text-primary transition-colors" />
                         </a>
-                        <a href="https://twitter.com/tempymail" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-between p-3 rounded-xl bg-surfaceHover border border-border hover:border-primary/30 transition-colors group">
-                            <span className="flex items-center gap-3 text-sm font-semibold text-textMain">
-                                <MessageCircle className="w-4 h-4 text-textMuted" /> @tempymail on X
-                            </span>
-                            <ExternalLink className="w-3.5 h-3.5 text-textMuted group-hover:text-primary transition-colors" />
-                        </a>
                     </div>
                 </div>
 
