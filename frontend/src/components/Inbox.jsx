@@ -1,9 +1,22 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { Inbox as InboxIcon, RefreshCcw, Loader2, Download, Paperclip } from 'lucide-react';
+import { Inbox as InboxIcon, RefreshCcw, Loader2, Download, Paperclip, Search, X } from 'lucide-react';
 import { api } from '../services/api';
 
 export default function Inbox({ messages, selectedId, onSelect, loading, currentAddress }) {
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const filteredMessages = useMemo(() => {
+        if (!searchQuery.trim()) return messages;
+        const q = searchQuery.toLowerCase();
+        return messages.filter(msg =>
+            (msg.from?.name || '').toLowerCase().includes(q) ||
+            (msg.from?.address || '').toLowerCase().includes(q) ||
+            (msg.subject || '').toLowerCase().includes(q) ||
+            (msg.intro || '').toLowerCase().includes(q)
+        );
+    }, [messages, searchQuery]);
+
     const handleDownloadAll = () => {
         if (!currentAddress || messages.length === 0) return;
         const url = `${api.defaults.baseURL}/messages/download?address=${encodeURIComponent(currentAddress)}`;
@@ -30,15 +43,46 @@ export default function Inbox({ messages, selectedId, onSelect, loading, current
                         </button>
                     )}
                 </div>
+
+                {/* Search Bar */}
+                {messages.length > 0 && (
+                    <div className="px-3 py-2 border-b border-border sticky top-[60px] bg-surface z-10">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-textMuted pointer-events-none" />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search by sender, subject..."
+                                className="w-full bg-surfaceHover border border-border rounded-lg py-1.5 pl-8 pr-8 text-xs text-textMain placeholder:text-textMuted outline-none focus:border-primary transition-colors"
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-textMuted hover:text-textMain transition-colors"
+                                >
+                                    <X className="w-3.5 h-3.5" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center p-12 text-center h-full">
                         <RefreshCcw className="w-10 h-10 mb-4 text-border animate-spin-slow" style={{ animationDuration: '3s' }} />
                         <p className="font-semibold text-textMain text-lg mb-1">Your inbox is empty</p>
                         <p className="text-sm text-textMuted">Waiting for incoming emails...<br />Auto-refreshing every 2s.</p>
                     </div>
+                ) : filteredMessages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center p-12 text-center h-full">
+                        <Search className="w-8 h-8 mb-3 text-textMuted" />
+                        <p className="font-semibold text-textMain text-sm mb-1">No matching emails</p>
+                        <p className="text-xs text-textMuted">Try a different search term.</p>
+                    </div>
                 ) : (
                     <div className="divide-y divide-border">
-                        {messages.map((msg) => (
+                        {filteredMessages.map((msg) => (
                             <div
                                 key={msg.id}
                                 onClick={() => onSelect(msg.id)}

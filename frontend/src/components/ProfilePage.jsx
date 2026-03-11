@@ -18,7 +18,7 @@ function SettingRow({ icon: Icon, label, description, children }) {
                     {description && <p className="text-xs text-textMuted mt-0.5">{description}</p>}
                 </div>
             </div>
-            <div className="ml-10">{children}</div>
+            <div className="sm:ml-10">{children}</div>
         </div>
     );
 }
@@ -167,7 +167,7 @@ export default function ProfilePage({ onBack, onLogout }) {
                         <div className="mx-auto w-20 h-20 rounded-full bg-surfaceHover flex items-center justify-center mb-6">
                             <User className="w-10 h-10 text-textMuted" />
                         </div>
-                        <h2 className="text-2xl font-extrabold text-gray-900 mb-2">No Account</h2>
+                        <h2 className="text-2xl font-extrabold text-textMain mb-2">No Account</h2>
                         <p className="text-textMuted text-sm mb-6">Sign in or create a premium account to access your profile.</p>
                         <button onClick={onBack} className="btn-primary w-full py-3 rounded-lg text-sm font-bold">Go to Premium Sign In</button>
                     </div>
@@ -177,7 +177,7 @@ export default function ProfilePage({ onBack, onLogout }) {
     }
 
     return (
-        <div className="min-h-screen bg-background flex flex-col items-center p-4 pt-8 text-textMain">
+        <div className="min-h-screen bg-background flex flex-col items-center p-3 sm:p-4 pt-6 sm:pt-8 text-textMain overflow-y-auto">
             <div className="w-full max-w-lg">
                 {/* Back button */}
                 <button onClick={onBack} className="flex items-center gap-2 text-textMuted hover:text-textMain transition-colors mb-6 group">
@@ -191,7 +191,7 @@ export default function ProfilePage({ onBack, onLogout }) {
                         <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-3 border-2 ${isPremium ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-surfaceHover border-border text-textMuted'}`}>
                             <User className="w-10 h-10" />
                         </div>
-                        <h1 className="text-xl font-extrabold text-gray-900">{user.email?.split('@')[0] || 'User'}</h1>
+                        <h1 className="text-xl font-extrabold text-textMain">{user.email?.split('@')[0] || 'User'}</h1>
                         <p className="text-textMuted text-sm">{user.email}</p>
                         {isPremium ? (
                             <div className="mt-2 flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">
@@ -319,7 +319,7 @@ export default function ProfilePage({ onBack, onLogout }) {
                                 <Sparkles className="w-5 h-5 text-primary" />
                             </div>
                             <div className="flex-1">
-                                <h3 className="font-bold text-gray-900 text-sm mb-1">Upgrade to Premium</h3>
+                                <h3 className="font-bold text-textMain text-sm mb-1">Upgrade to Premium</h3>
                                 <p className="text-xs text-textMuted mb-3">Custom aliases, forwarding, attachments, reply, webhooks, and more — $4.99/mo</p>
                                 <button className="btn-primary text-xs px-4 py-2 rounded-lg font-bold">Upgrade Now</button>
                             </div>
@@ -333,7 +333,7 @@ export default function ProfilePage({ onBack, onLogout }) {
                         <span className="flex items-center gap-3 text-sm font-semibold"><LogOut className="w-4 h-4 text-textMuted" /> Log Out</span>
                         <ChevronRight className="w-4 h-4 text-textMuted group-hover:translate-x-0.5 transition-transform" />
                     </button>
-                    <button onClick={() => setShowDeleteConfirm(true)} className="w-full flex items-center justify-between p-3.5 rounded-xl bg-surface border border-red-200 hover:bg-red-50 transition-colors group">
+                    <button onClick={() => setShowDeleteConfirm(true)} className="w-full flex items-center justify-between p-3.5 rounded-xl bg-surface border border-border hover:bg-red-500/10 transition-colors group">
                         <span className="flex items-center gap-3 text-sm font-semibold text-red-600"><Trash2 className="w-4 h-4 text-red-500" /> Delete Account</span>
                         <ChevronRight className="w-4 h-4 text-red-400 group-hover:translate-x-0.5 transition-transform" />
                     </button>
@@ -343,10 +343,10 @@ export default function ProfilePage({ onBack, onLogout }) {
                 {showDeleteConfirm && (
                     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                         <div className="dashboard-panel p-8 max-w-sm w-full text-center">
-                            <div className="mx-auto w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-4">
+                            <div className="mx-auto w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
                                 <AlertTriangle className="w-7 h-7 text-red-500" />
                             </div>
-                            <h3 className="text-xl font-extrabold text-gray-900 mb-2">Delete Account?</h3>
+                            <h3 className="text-xl font-extrabold text-textMain mb-2">Delete Account?</h3>
                             <p className="text-textMuted text-sm mb-6">This cannot be undone. All data will be permanently removed.</p>
                             <div className="flex gap-3">
                                 <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-3 rounded-lg border border-border text-sm font-bold text-textMain hover:bg-surfaceHover">Cancel</button>

@@ -99,10 +99,10 @@ export default function AdminDashboard({ onBack }) {
         return (
             <div className="min-h-screen flex items-center justify-center p-4 bg-background text-textMain">
                 <div className="dashboard-panel p-10 max-w-md w-full text-center">
-                    <div className="p-4 bg-green-50 rounded-xl w-fit mx-auto mb-6 border border-green-100">
+                    <div className="p-4 bg-primary/10 rounded-xl w-fit mx-auto mb-6 border border-primary/20">
                         <Lock className="w-8 h-8 text-primary" />
                     </div>
-                    <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Admin Access</h2>
+                    <h2 className="text-2xl font-extrabold text-textMain mb-2">Admin Access</h2>
                     <p className="text-textMuted mb-8 text-sm">Enter your admin key to view analytics.</p>
                     <input
                         type="password"
@@ -138,7 +138,7 @@ export default function AdminDashboard({ onBack }) {
                             <ArrowLeft className="w-5 h-5" />
                         </button>
                         <div>
-                            <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">Analytics Dashboard</h1>
+                            <h1 className="text-xl sm:text-2xl font-extrabold text-textMain tracking-tight">Analytics Dashboard</h1>
                             {lastRefresh && (
                                 <p className="text-xs text-textMuted mt-0.5">
                                     Last updated: {lastRefresh.toLocaleTimeString()}
@@ -147,9 +147,9 @@ export default function AdminDashboard({ onBack }) {
                         </div>
                     </div>
                     <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 rounded-full border border-green-200">
-                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                            <span className="text-xs font-semibold text-green-700">Live</span>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20">
+                            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                            <span className="text-xs font-semibold text-primary">Live</span>
                         </div>
                         <button onClick={refreshStats} disabled={loading} className="btn-secondary px-4 py-2 gap-2 text-sm ml-auto sm:ml-0">
                             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
@@ -207,7 +207,7 @@ export default function AdminDashboard({ onBack }) {
                         </div>
                         <div>
                             <p className="text-xs text-textMuted font-semibold uppercase tracking-wider">Unique Mailboxes</p>
-                            <p className="text-xl sm:text-2xl font-extrabold text-gray-900">{(stats?.uniqueRecipients || 0).toLocaleString()}</p>
+                            <p className="text-xl sm:text-2xl font-extrabold text-textMain">{(stats?.uniqueRecipients || 0).toLocaleString()}</p>
                         </div>
                     </div>
                     <div className="dashboard-card p-4 sm:p-5 flex items-center gap-4">
@@ -216,7 +216,7 @@ export default function AdminDashboard({ onBack }) {
                         </div>
                         <div>
                             <p className="text-xs text-textMuted font-semibold uppercase tracking-wider">Emails / Account</p>
-                            <p className="text-xl sm:text-2xl font-extrabold text-gray-900">{emailRate}</p>
+                            <p className="text-xl sm:text-2xl font-extrabold text-textMain">{emailRate}</p>
                         </div>
                     </div>
                     <div className="dashboard-card p-4 sm:p-5 flex items-center gap-4 col-span-2 lg:col-span-1">
@@ -225,7 +225,7 @@ export default function AdminDashboard({ onBack }) {
                         </div>
                         <div>
                             <p className="text-xs text-textMuted font-semibold uppercase tracking-wider">Hourly Rate</p>
-                            <p className="text-xl sm:text-2xl font-extrabold text-gray-900">
+                            <p className="text-xl sm:text-2xl font-extrabold text-textMain">
                                 {stats?.hourlyChart?.length > 0
                                     ? (stats.hourlyChart.reduce((sum, h) => sum + h.count, 0) / Math.max(stats.hourlyChart.length, 1)).toFixed(1)
                                     : '0'
@@ -239,7 +239,7 @@ export default function AdminDashboard({ onBack }) {
                 {/* Hourly Chart */}
                 <div className="dashboard-panel p-4 sm:p-6 mb-6">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Email Activity — Last 24 Hours</h3>
+                        <h3 className="text-base sm:text-lg font-bold text-textMain tracking-tight">Email Activity — Last 24 Hours</h3>
                         <span className="text-xs text-textMuted bg-surfaceHover px-2 py-1 rounded-md font-medium">
                             {stats?.hourlyChart?.reduce((s, h) => s + h.count, 0) || 0} total
                         </span>
@@ -279,7 +279,7 @@ export default function AdminDashboard({ onBack }) {
                 {/* Recent Emails Table */}
                 <div className="dashboard-panel overflow-hidden">
                     <div className="p-4 sm:p-6 border-b border-border bg-surface flex items-center justify-between">
-                        <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Recent Emails</h3>
+                        <h3 className="text-base sm:text-lg font-bold text-textMain tracking-tight">Recent Emails</h3>
                         <span className="text-xs bg-surfaceHover px-2 py-1 rounded-md text-textMuted font-medium">
                             {recentEmails.length} shown
                         </span>
@@ -338,9 +338,9 @@ export default function AdminDashboard({ onBack }) {
             {/* Detail Modal */}
             {detailModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setDetailModal(null)}>
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                    <div className="bg-surface rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] flex flex-col border border-border" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between p-5 border-b border-border">
-                            <h3 className="text-lg font-extrabold text-gray-900">
+                            <h3 className="text-lg font-extrabold text-textMain">
                                 {detailModal.type === 'premium' ? '👑 Premium Users' : '🌐 Unique Visitors (IPs)'}
                             </h3>
                             <button onClick={() => setDetailModal(null)} className="p-1.5 rounded-lg hover:bg-surfaceHover text-textMuted">
@@ -355,7 +355,7 @@ export default function AdminDashboard({ onBack }) {
                                     <div key={i} className="flex items-center justify-between px-5 py-3">
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm">P</div>
-                                            <span className="text-sm font-medium text-gray-900">{user.email}</span>
+                                            <span className="text-sm font-medium text-textMain">{user.email}</span>
                                         </div>
                                         <span className="text-xs text-textMuted">{new Date(user.joinedAt).toLocaleDateString()}</span>
                                     </div>
@@ -365,7 +365,7 @@ export default function AdminDashboard({ onBack }) {
                                     <div key={i} className="flex items-center justify-between px-5 py-3">
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center font-bold text-xs">IP</div>
-                                            <span className="text-sm font-mono font-medium text-gray-900">{v.ip}</span>
+                                            <span className="text-sm font-mono font-medium text-textMain">{v.ip}</span>
                                         </div>
                                         <span className="text-xs text-textMuted">{new Date(v.firstSeen).toLocaleString()}</span>
                                     </div>
@@ -402,7 +402,7 @@ function StatCard({ icon, label, value, color = 'green', onClick }) {
                     <div className={`p-1.5 sm:p-2 ${colors[color]} rounded-lg border`}>{icon}</div>
                 </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+            <p className="text-2xl sm:text-3xl font-extrabold text-textMain tracking-tight">
                 {typeof value === 'number' ? value.toLocaleString() : value}
             </p>
         </div>
