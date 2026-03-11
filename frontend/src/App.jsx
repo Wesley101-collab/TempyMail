@@ -144,6 +144,7 @@ function App() {
         onGetStarted={handleGetStarted}
         loading={mailLoading}
         onGoToPremium={() => navigateTo('premium', '/premium')}
+        onNumbersClick={() => navigateTo('numbers', '/numbers')}
       />
     );
   }
