@@ -4,7 +4,7 @@ import {
     AtSign, Forward, Reply, Paperclip, Webhook, Inbox, Download, Clock, Phone, MessageSquare
 } from 'lucide-react';
 
-export default function LandingPage({ onGetStarted, loading, onGoToPremium, onNumbersClick }) {
+export default function LandingPage({ onGetStarted, loading, onGoToPremium, onNumbersClick, onLegalPage }) {
     return (
         <div className="min-h-screen flex flex-col bg-background relative overflow-hidden text-textMain">
 
@@ -226,6 +226,11 @@ export default function LandingPage({ onGetStarted, loading, onGoToPremium, onNu
                     <p className="text-textMuted text-sm">
                         © 2026 TempyMail. Protected by <a href="#" className="font-medium hover:text-primary transition-colors">vredobox.cc</a>
                     </p>
+                    <div className="flex items-center gap-4 text-sm">
+                        <button onClick={() => onLegalPage('terms', '/terms')} className="text-textMuted hover:text-primary transition-colors">Terms</button>
+                        <button onClick={() => onLegalPage('privacy', '/privacy')} className="text-textMuted hover:text-primary transition-colors">Privacy</button>
+                        <button onClick={() => onLegalPage('refund', '/refund')} className="text-textMuted hover:text-primary transition-colors">Refund Policy</button>
+                    </div>
                 </div>
             </footer>
         </div>

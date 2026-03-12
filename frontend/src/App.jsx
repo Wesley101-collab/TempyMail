@@ -10,6 +10,9 @@ import PremiumAuth from './components/PremiumAuth';
 import ProfilePage from './components/ProfilePage';
 import TempNumbers from './components/TempNumbers';
 import AdBanner from './components/AdBanner';
+import TermsOfService from './components/TermsOfService';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import RefundPolicy from './components/RefundPolicy';
 
 function App() {
   const {
@@ -41,6 +44,9 @@ function App() {
     if (pathname === '/premium') return 'premium';
     if (pathname === '/profile') return 'profile';
     if (pathname === '/numbers') return 'numbers';
+    if (pathname === '/terms') return 'terms';
+    if (pathname === '/privacy') return 'privacy';
+    if (pathname === '/refund') return 'refund';
     return 'landing';
   };
 
@@ -137,6 +143,17 @@ function App() {
     );
   }
 
+  // Legal Pages
+  if (page === 'terms') {
+    return <TermsOfService onBack={() => navigateTo('landing', '/')} />;
+  }
+  if (page === 'privacy') {
+    return <PrivacyPolicy onBack={() => navigateTo('landing', '/')} />;
+  }
+  if (page === 'refund') {
+    return <RefundPolicy onBack={() => navigateTo('landing', '/')} />;
+  }
+
   // Landing page
   if (page === 'landing' && !started) {
     return (
@@ -145,6 +162,7 @@ function App() {
         loading={mailLoading}
         onGoToPremium={() => navigateTo('premium', '/premium')}
         onNumbersClick={() => navigateTo('numbers', '/numbers')}
+        onLegalPage={navigateTo}
       />
     );
   }
