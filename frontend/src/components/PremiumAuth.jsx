@@ -186,6 +186,13 @@ export default function PremiumAuth({ onBack, onSuccess }) {
                 {/* Footer */}
                 <div className="text-center text-textMuted/60 text-xs mt-8 font-medium">
                     <p>Secured with end-to-end encryption</p>
+                    <div className="flex items-center justify-center gap-3 mt-3 mb-1">
+                        <a href="/privacy" className="hover:text-primary transition-colors underline">Privacy Policy</a>
+                        <span>·</span>
+                        <a href="/terms" className="hover:text-primary transition-colors underline">Terms of Service</a>
+                        <span>·</span>
+                        <a href="/refund" className="hover:text-primary transition-colors underline">Refund Policy</a>
+                    </div>
                     <p className="mt-1">TempyMail © 2026</p>
                 </div>
             </div>
