@@ -8,7 +8,6 @@ import LandingPage from './components/LandingPage';
 import AdminDashboard from './components/AdminDashboard';
 import PremiumAuth from './components/PremiumAuth';
 import ProfilePage from './components/ProfilePage';
-import TempNumbers from './components/TempNumbers';
 import AdBanner from './components/AdBanner';
 import TermsOfService from './components/TermsOfService';
 import PrivacyPolicy from './components/PrivacyPolicy';
@@ -43,7 +42,6 @@ function App() {
     if (pathname === '/admin') return 'admin';
     if (pathname === '/premium') return 'premium';
     if (pathname === '/profile') return 'profile';
-    if (pathname === '/numbers') return 'numbers';
     if (pathname === '/terms') return 'terms';
     if (pathname === '/privacy') return 'privacy';
     if (pathname === '/refund') return 'refund';
@@ -134,14 +132,6 @@ function App() {
     );
   }
 
-  // Temp Numbers Page
-  if (page === 'numbers') {
-    return (
-      <TempNumbers
-        onBack={handleGoToEmail}
-      />
-    );
-  }
 
   // Legal Pages
   if (page === 'terms') {
@@ -161,7 +151,6 @@ function App() {
         onGetStarted={handleGetStarted}
         loading={mailLoading}
         onGoToPremium={() => navigateTo('premium', '/premium')}
-        onNumbersClick={() => navigateTo('numbers', '/numbers')}
         onLegalPage={navigateTo}
       />
     );
@@ -213,7 +202,6 @@ function App() {
             navigateTo('premium', '/premium');
           }
         }}
-        onNumbersClick={() => navigateTo('numbers', '/numbers')}
       />
 
       {/* Main Content Area - Fixed mobile layout */}
