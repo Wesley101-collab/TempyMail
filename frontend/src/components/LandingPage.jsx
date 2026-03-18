@@ -1,10 +1,10 @@
 import React from 'react';
 import {
     Mail, Shield, Zap, Sparkles, Check, X, RefreshCcw, ArrowRight,
-    AtSign, Forward, Reply, Paperclip, Webhook, Inbox, Download, Clock, Phone, MessageSquare
+    AtSign, Forward, Reply, Paperclip, Webhook, Inbox, Download, Clock
 } from 'lucide-react';
 
-export default function LandingPage({ onGetStarted, loading, onGoToPremium, onNumbersClick, onLegalPage }) {
+export default function LandingPage({ onGetStarted, loading, onGoToPremium, onLegalPage }) {
     return (
         <div className="min-h-screen flex flex-col bg-background relative overflow-hidden text-textMain">
 
@@ -18,7 +18,6 @@ export default function LandingPage({ onGetStarted, loading, onGoToPremium, onNu
                 </div>
                 <div className="flex items-center gap-2 sm:gap-4">
                     <a href="#features" className="text-sm font-medium text-textMuted hover:text-textMain transition-colors hidden sm:block">Features</a>
-                    <button onClick={onNumbersClick} className="text-sm font-medium text-textMuted hover:text-textMain transition-colors hidden sm:block">Temp Numbers</button>
                     <a href="#pricing" className="text-sm font-medium text-textMuted hover:text-textMain transition-colors hidden sm:block">Pricing</a>
                     <button
                         onClick={onGoToPremium}
@@ -96,25 +95,6 @@ export default function LandingPage({ onGetStarted, loading, onGoToPremium, onNu
                             <h3 className="font-bold text-gray-900 mb-2 text-lg">AI Summarizer</h3>
                             <p className="text-textMuted text-sm leading-relaxed">Too long, didn't read? Let our AI instantly summarize long, boring emails for you.</p>
                         </div>
-                    </div>
-
-                    {/* Temp Numbers CTA */}
-                    <div className="mt-12 sm:mt-20 dashboard-card p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 border-primary/30 hover:border-primary/60 transition-colors cursor-pointer group" onClick={onNumbersClick}>
-                        <div className="w-14 h-14 bg-primary/10 border border-primary/20 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                            <Phone className="w-7 h-7 text-primary" />
-                        </div>
-                        <div className="flex-1 text-center sm:text-left">
-                            <h3 className="font-bold text-gray-900 text-lg mb-1 flex items-center justify-center sm:justify-start gap-2">
-                                Free Temporary Phone Numbers
-                                <span className="bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-bold">NEW</span>
-                            </h3>
-                            <p className="text-textMuted text-sm leading-relaxed">Receive SMS online with 45+ free phone numbers from the US, UK, Canada, Germany, and more. View verification codes instantly — no signup needed.</p>
-                        </div>
-                        <button className="btn-primary px-5 py-2.5 text-sm font-bold gap-2 whitespace-nowrap flex-shrink-0">
-                            <MessageSquare className="w-4 h-4" />
-                            Browse Numbers
-                            <ArrowRight className="w-4 h-4" />
-                        </button>
                     </div>
                 </div>
             </section>
