@@ -223,13 +223,6 @@ export default function Header({ account, generateAccount, refreshInbox, onLogoC
                                         QR Code
                                     </button>
 
-                                    <button
-                                        onClick={() => { onNumbersClick(); setShowMobileMenu(false); }}
-                                        className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-surfaceHover text-textMain transition-colors flex items-center gap-3"
-                                    >
-                                        <Phone className="w-4 h-4 text-textMuted flex-shrink-0" />
-                                        Temp Numbers
-                                    </button>
 
                                     <button
                                         onClick={() => { setShowMobileMenu(false); setTimeout(() => setShowHistory(true), 50); }}
