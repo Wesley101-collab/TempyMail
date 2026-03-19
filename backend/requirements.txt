@@ -6,3 +6,5 @@ beautifulsoup4
 bcrypt
 python-dotenv
 resend
+slowapi
+PyJWT

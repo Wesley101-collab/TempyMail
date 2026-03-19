@@ -28,7 +28,8 @@ export default function MessageViewer({ message, loading, onDelete, onBack }) {
         setShowDetails(false);
 
         if (message?.hasAttachments) {
-            api.get(`/messages/${message.id}/attachments`)
+            const addr = message.to?.[0]?.address || '';
+            api.get(`/messages/${message.id}/attachments`, { params: { address: addr } })
                 .then(({ data }) => setAttachments(data.attachments || []))
                 .catch(() => { });
         }
@@ -74,12 +75,14 @@ export default function MessageViewer({ message, loading, onDelete, onBack }) {
     };
 
     const handleDownloadEml = () => {
-        const url = `${api.defaults.baseURL}/messages/${message.id}/download`;
+        const addr = encodeURIComponent(message.to?.[0]?.address || '');
+        const url = `${api.defaults.baseURL}/messages/${message.id}/download?address=${addr}`;
         window.open(url, '_blank');
     };
 
     const handleDownloadAttachment = (attachmentId, filename) => {
-        const url = `${api.defaults.baseURL}/attachments/${attachmentId}`;
+        const addr = encodeURIComponent(message.to?.[0]?.address || '');
+        const url = `${api.defaults.baseURL}/attachments/${attachmentId}?address=${addr}`;
         const a = document.createElement('a');
         a.href = url;
         a.download = filename;

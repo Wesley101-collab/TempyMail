@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, Response
+from fastapi import APIRouter, HTTPException, Query, Response, Header, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from services.database import get_connection
@@ -8,13 +8,17 @@ import bcrypt
 import os
 import io
 import zipfile
-import smtplib
 import json
 import uuid
+import jwt
 import resend
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime
+from datetime import datetime, timedelta
+from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 resend.api_key = os.getenv("RESEND_API_KEY", "")
 
@@ -23,6 +27,11 @@ router = APIRouter()
 PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY", "")
 PREMIUM_AMOUNT = 499  # $4.99 in cents (USD)
 EMAIL_DOMAIN = "vredobox.cc"
+
+# JWT secret — uses ADMIN_KEY as a base, so no extra env var needed
+JWT_SECRET = os.getenv("ADMIN_KEY", "tempymail-secret-key-change-me")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRY_DAYS = 30
 
 
 # --- Pydantic Models ---
@@ -44,11 +53,11 @@ class AliasRequest(BaseModel):
 
 class ForwardingRequest(BaseModel):
     email: str
-    forward_to: str  # empty string to disable
+    forward_to: str
 
 class WebhookRequest(BaseModel):
     email: str
-    webhook_url: str  # empty string to disable
+    webhook_url: str
 
 class CreateInboxRequest(BaseModel):
     email: str
@@ -62,7 +71,49 @@ class ReplyRequest(BaseModel):
     in_reply_to: str = ""
 
 
-# --- Helpers ---
+# --- JWT Helpers ---
+
+def _create_token(email: str) -> str:
+    """Create a JWT token for the given email."""
+    payload = {
+        "sub": email.lower(),
+        "iat": datetime.utcnow(),
+        "exp": datetime.utcnow() + timedelta(days=JWT_EXPIRY_DAYS),
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+
+def _verify_token(authorization: Optional[str] = Header(None)) -> str:
+    """Verify JWT token from Authorization header. Returns the email."""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    # Support "Bearer <token>" format
+    token = authorization
+    if authorization.startswith("Bearer "):
+        token = authorization[7:]
+    
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        email = payload.get("sub")
+        if not email:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return email
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Session expired. Please log in again.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+def _verify_token_matches(authorization: Optional[str], target_email: str) -> str:
+    """Verify token AND ensure it matches the target email (prevents IDOR)."""
+    email = _verify_token(authorization)
+    if email != target_email.lower():
+        raise HTTPException(status_code=403, detail="Access denied")
+    return email
+
+
+# --- Password Helpers ---
 
 def _hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
@@ -94,45 +145,64 @@ async def premium_signup(req: SignupRequest):
     if len(req.password) < 6:
         raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
 
-    conn = get_connection()
-    existing = conn.execute("SELECT id FROM premium_users WHERE email = ?", (req.email.lower(),)).fetchone()
-    if existing:
-        conn.close()
-        raise HTTPException(status_code=409, detail="Account already exists. Please log in.")
+    try:
+        conn = get_connection()
+        existing = conn.execute("SELECT id FROM premium_users WHERE email = ?", (req.email.lower(),)).fetchone()
+        if existing:
+            conn.close()
+            raise HTTPException(status_code=409, detail="Account already exists. Please log in.")
 
-    conn.execute(
-        "INSERT INTO premium_users (email, password_hash) VALUES (?, ?)",
-        (req.email.lower(), _hash_password(req.password))
-    )
-    conn.commit()
-    conn.close()
-    return {"success": True, "message": "Account created! Complete payment to activate premium."}
+        conn.execute(
+            "INSERT INTO premium_users (email, password_hash) VALUES (?, ?)",
+            (req.email.lower(), _hash_password(req.password))
+        )
+        conn.commit()
+        conn.close()
+
+        # Return JWT token on signup too
+        token = _create_token(req.email)
+        return {"success": True, "message": "Account created!", "token": token}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Signup error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create account.")
 
 
 @router.post("/premium/login")
 async def premium_login(req: LoginRequest):
-    conn = get_connection()
-    user = conn.execute(
-        "SELECT id, email, password_hash, is_active, custom_alias, forward_to, webhook_url, created_at FROM premium_users WHERE email = ?",
-        (req.email.lower(),)
-    ).fetchone()
-    conn.close()
+    try:
+        conn = get_connection()
+        user = conn.execute(
+            "SELECT id, email, password_hash, is_active, custom_alias, forward_to, webhook_url, created_at FROM premium_users WHERE email = ?",
+            (req.email.lower(),)
+        ).fetchone()
+        conn.close()
 
-    if not user or not _verify_password(req.password, user["password_hash"]):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        if not user or not _verify_password(req.password, user["password_hash"]):
+            raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    return {
-        "success": True,
-        "user": {
-            "id": user["id"],
-            "email": user["email"],
-            "is_premium": bool(user["is_active"]),
-            "custom_alias": user["custom_alias"] or "",
-            "forward_to": user["forward_to"] or "",
-            "webhook_url": user["webhook_url"] or "",
-            "created_at": user["created_at"],
+        # Create JWT token
+        token = _create_token(req.email)
+
+        return {
+            "success": True,
+            "token": token,
+            "user": {
+                "id": user["id"],
+                "email": user["email"],
+                "is_premium": bool(user["is_active"]),
+                "custom_alias": user["custom_alias"] or "",
+                "forward_to": user["forward_to"] or "",
+                "webhook_url": user["webhook_url"] or "",
+                "created_at": user["created_at"],
+            }
         }
-    }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login error: {e}")
+        raise HTTPException(status_code=500, detail="Login failed.")
 
 
 @router.get("/premium/check/{email}")
@@ -145,28 +215,26 @@ async def check_premium(email: str):
     return {"is_premium": bool(user and user["is_active"])}
 
 
-# --- Custom Alias ---
+# --- Custom Alias (JWT Protected) ---
 
 @router.post("/premium/alias")
-async def set_alias(req: AliasRequest):
+async def set_alias(req: AliasRequest, authorization: Optional[str] = Header(None)):
+    _verify_token_matches(authorization, req.email)
     _require_premium(req.email)
     
     alias = req.alias.strip().lower()
     if not alias:
-        # Clear alias
         conn = get_connection()
         conn.execute("UPDATE premium_users SET custom_alias = '' WHERE email = ?", (req.email.lower(),))
         conn.commit()
         conn.close()
         return {"success": True, "alias": "", "address": ""}
     
-    # Validate alias
     if len(alias) < 3 or len(alias) > 30:
         raise HTTPException(status_code=400, detail="Alias must be 3-30 characters")
     if not alias.replace(".", "").replace("_", "").replace("-", "").isalnum():
         raise HTTPException(status_code=400, detail="Alias can only contain letters, numbers, dots, hyphens, and underscores")
     
-    # Check uniqueness
     conn = get_connection()
     existing = conn.execute(
         "SELECT id FROM premium_users WHERE custom_alias = ? AND email != ?",
@@ -184,7 +252,8 @@ async def set_alias(req: AliasRequest):
 
 
 @router.get("/premium/alias/{email}")
-async def get_alias(email: str):
+async def get_alias(email: str, authorization: Optional[str] = Header(None)):
+    _verify_token_matches(authorization, email)
     user = _get_premium_user(email)
     if not user:
         return {"alias": "", "address": ""}
@@ -192,10 +261,11 @@ async def get_alias(email: str):
     return {"alias": alias, "address": f"{alias}@{EMAIL_DOMAIN}" if alias else ""}
 
 
-# --- Multiple Inboxes ---
+# --- Multiple Inboxes (JWT Protected) ---
 
 @router.post("/premium/inboxes")
-async def create_inbox(req: CreateInboxRequest):
+async def create_inbox(req: CreateInboxRequest, authorization: Optional[str] = Header(None)):
+    _verify_token_matches(authorization, req.email)
     _require_premium(req.email)
     
     conn = get_connection()
@@ -208,7 +278,6 @@ async def create_inbox(req: CreateInboxRequest):
         conn.close()
         raise HTTPException(status_code=400, detail="Maximum 5 active inboxes allowed")
     
-    # Generate address
     data = mailbox.generate_address()
     address = data["address"]
     
@@ -223,7 +292,8 @@ async def create_inbox(req: CreateInboxRequest):
 
 
 @router.get("/premium/inboxes/{email}")
-async def list_inboxes(email: str):
+async def list_inboxes(email: str, authorization: Optional[str] = Header(None)):
+    _verify_token_matches(authorization, email)
     user = _get_premium_user(email)
     if not user:
         return {"inboxes": []}
@@ -239,7 +309,8 @@ async def list_inboxes(email: str):
 
 
 @router.delete("/premium/inboxes/{email}/{address}")
-async def delete_inbox(email: str, address: str):
+async def delete_inbox(email: str, address: str, authorization: Optional[str] = Header(None)):
+    _verify_token_matches(authorization, email)
     _require_premium(email)
     conn = get_connection()
     conn.execute(
@@ -251,10 +322,11 @@ async def delete_inbox(email: str, address: str):
     return {"success": True}
 
 
-# --- Email Forwarding ---
+# --- Email Forwarding (JWT Protected) ---
 
 @router.post("/premium/forwarding")
-async def set_forwarding(req: ForwardingRequest):
+async def set_forwarding(req: ForwardingRequest, authorization: Optional[str] = Header(None)):
+    _verify_token_matches(authorization, req.email)
     _require_premium(req.email)
     conn = get_connection()
     conn.execute(
@@ -266,10 +338,11 @@ async def set_forwarding(req: ForwardingRequest):
     return {"success": True, "forward_to": req.forward_to.strip()}
 
 
-# --- Webhook ---
+# --- Webhook (JWT Protected) ---
 
 @router.post("/premium/webhook")
-async def set_webhook(req: WebhookRequest):
+async def set_webhook(req: WebhookRequest, authorization: Optional[str] = Header(None)):
+    _verify_token_matches(authorization, req.email)
     _require_premium(req.email)
     
     url = req.webhook_url.strip()
@@ -286,11 +359,11 @@ async def set_webhook(req: WebhookRequest):
     return {"success": True, "webhook_url": url}
 
 
-# --- Download Emails ---
+# --- Download Emails (IDOR Protected) ---
 
 @router.get("/messages/{message_id}/download")
-async def download_email(message_id: str):
-    """Download a single email as .eml file."""
+async def download_email(message_id: str, address: str = Query(..., description="Email address that owns this message")):
+    """Download a single email as .eml file — with IDOR protection."""
     conn = get_connection()
     row = conn.execute("SELECT * FROM emails WHERE id = ?", (message_id,)).fetchone()
     conn.close()
@@ -298,7 +371,10 @@ async def download_email(message_id: str):
     if not row:
         raise HTTPException(status_code=404, detail="Message not found")
     
-    # Build .eml content
+    # IDOR protection
+    if row["recipient"].lower() != address.lower():
+        raise HTTPException(status_code=403, detail="Access denied")
+    
     msg = MIMEMultipart()
     msg["From"] = f"{row['sender_name']} <{row['sender']}>" if row["sender_name"] else row["sender"]
     msg["To"] = row["recipient"]
@@ -311,11 +387,12 @@ async def download_email(message_id: str):
         msg.attach(MIMEText(row["text_body"], "plain"))
     
     eml_content = msg.as_string()
+    safe_subject = "".join(c for c in (row["subject"] or "email") if c.isalnum() or c in " -_")[:50]
     
     return Response(
         content=eml_content,
         media_type="message/rfc822",
-        headers={"Content-Disposition": f'attachment; filename="{row["subject"][:50] or "email"}.eml"'}
+        headers={"Content-Disposition": f'attachment; filename="{safe_subject}.eml"'}
     )
 
 
@@ -332,7 +409,6 @@ async def download_inbox(address: str = Query(...)):
     if not rows:
         raise HTTPException(status_code=404, detail="No messages found")
     
-    # Create zip in memory
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
         for i, row in enumerate(rows):
@@ -357,11 +433,18 @@ async def download_inbox(address: str = Query(...)):
     )
 
 
-# --- Attachments ---
+# --- Attachments (IDOR Protected) ---
 
 @router.get("/messages/{message_id}/attachments")
-async def list_attachments(message_id: str):
+async def list_attachments(message_id: str, address: str = Query(..., description="Email address that owns this message")):
+    """List attachments — with IDOR protection."""
+    # Verify message belongs to address
     conn = get_connection()
+    email_row = conn.execute("SELECT recipient FROM emails WHERE id = ?", (message_id,)).fetchone()
+    if not email_row or email_row["recipient"].lower() != address.lower():
+        conn.close()
+        raise HTTPException(status_code=403, detail="Access denied")
+    
     rows = conn.execute(
         "SELECT id, filename, content_type, size FROM email_attachments WHERE email_id = ?",
         (message_id,)
@@ -371,16 +454,24 @@ async def list_attachments(message_id: str):
 
 
 @router.get("/attachments/{attachment_id}")
-async def download_attachment(attachment_id: str):
+async def download_attachment(attachment_id: str, address: str = Query(..., description="Email address that owns this attachment")):
+    """Download attachment — with IDOR protection."""
     conn = get_connection()
     row = conn.execute(
-        "SELECT filename, content_type, data FROM email_attachments WHERE id = ?",
+        """SELECT ea.filename, ea.content_type, ea.data, e.recipient 
+           FROM email_attachments ea 
+           JOIN emails e ON ea.email_id = e.id 
+           WHERE ea.id = ?""",
         (attachment_id,)
     ).fetchone()
     conn.close()
     
     if not row:
         raise HTTPException(status_code=404, detail="Attachment not found")
+    
+    # IDOR protection
+    if row["recipient"].lower() != address.lower():
+        raise HTTPException(status_code=403, detail="Access denied")
     
     return Response(
         content=row["data"],
@@ -389,13 +480,23 @@ async def download_attachment(attachment_id: str):
     )
 
 
-# --- Reply to Email ---
+# --- Reply to Email (Auth Protected) ---
 
 @router.post("/messages/reply")
 async def reply_to_email(req: ReplyRequest):
-    """Send a reply email via the local Postfix server."""
+    """Send a reply email — validates from_address belongs to our domain."""
+    # Validate from_address is a @vredobox.cc address (prevent arbitrary sender spoofing)
+    if not req.from_address.lower().endswith(f"@{EMAIL_DOMAIN}"):
+        raise HTTPException(status_code=400, detail="Can only reply from @vredobox.cc addresses")
+    
+    if not req.to_address or not req.body.strip():
+        raise HTTPException(status_code=400, detail="Recipient and body are required")
+    
+    # Rate-limit body length
+    if len(req.body) > 5000:
+        raise HTTPException(status_code=400, detail="Reply body too long (max 5000 chars)")
+    
     try:
-        # Send via Resend
         resend.Emails.send({
             "from": f"TempyMail Reply <{req.from_address}>",
             "to": req.to_address,
@@ -406,7 +507,6 @@ async def reply_to_email(req: ReplyRequest):
             }
         })
         
-        # Store sent email
         reply_id = str(uuid.uuid4())
         conn = get_connection()
         conn.execute(
@@ -418,13 +518,17 @@ async def reply_to_email(req: ReplyRequest):
         
         return {"success": True, "message_id": reply_id}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to send: {str(e)}")
+        logger.error(f"Reply error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send reply.")
 
 
-# --- Delete Account ---
+# --- Delete Account (JWT Protected) ---
 
 @router.delete("/premium/user/{email}")
-async def delete_user(email: str):
+async def delete_user(email: str, authorization: Optional[str] = Header(None)):
+    """Delete a premium account — requires JWT matching the email."""
+    _verify_token_matches(authorization, email)
+    
     conn = get_connection()
     conn.execute("DELETE FROM premium_users WHERE email = ?", (email.lower(),))
     conn.execute("DELETE FROM user_inboxes WHERE user_email = ?", (email.lower(),))
@@ -463,7 +567,8 @@ async def initialize_payment(req: PaymentInitRequest):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Payment init error: {e}")
+        raise HTTPException(status_code=500, detail="Payment service unavailable.")
 
 
 @router.get("/payment/verify/{reference}")
@@ -487,4 +592,5 @@ async def verify_payment(reference: str):
                 return {"success": True, "amount": data["data"]["amount"] / 100, "email": email}
             return {"success": False}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Payment verify error: {e}")
+        raise HTTPException(status_code=500, detail="Payment verification failed.")

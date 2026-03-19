@@ -27,6 +27,11 @@ export default function PremiumAuth({ onBack, onSuccess }) {
                 const { data: signupData } = await api.post('/premium/signup', { email, password });
                 setSuccess(signupData.message);
 
+                // Store JWT token from signup
+                if (signupData.token) {
+                    localStorage.setItem('premium_token', signupData.token);
+                }
+
                 // Initialize payment
                 const { data: payData } = await api.post('/payment/initialize', { email });
                 if (payData.authorization_url) {
@@ -39,6 +44,9 @@ export default function PremiumAuth({ onBack, onSuccess }) {
                 if (data.success) {
                     localStorage.setItem('premium_email', data.user.email);
                     localStorage.setItem('premium_user', JSON.stringify(data.user));
+                    if (data.token) {
+                        localStorage.setItem('premium_token', data.token);
+                    }
                     if (onSuccess) onSuccess(data.user);
                 }
             }

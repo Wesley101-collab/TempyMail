@@ -65,6 +65,7 @@ export default function ProfilePage({ onBack, onLogout }) {
     const handleLogout = () => {
         localStorage.removeItem('premium_user');
         localStorage.removeItem('premium_email');
+        localStorage.removeItem('premium_token');
         if (onLogout) onLogout();
     };
 
@@ -74,6 +75,7 @@ export default function ProfilePage({ onBack, onLogout }) {
             await api.delete(`/premium/user/${user?.email}`).catch(() => { });
             localStorage.removeItem('premium_user');
             localStorage.removeItem('premium_email');
+            localStorage.removeItem('premium_token');
             if (onLogout) onLogout();
         } finally {
             setDeleteLoading(false);

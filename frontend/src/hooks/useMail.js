@@ -148,7 +148,7 @@ export const useMail = () => {
     const getMessageDetails = async (id) => {
         try {
             setLoading(true);
-            const { data } = await api.get(`/messages/${id}`);
+            const { data } = await api.get(`/messages/${id}`, { params: { address: account?.address } });
             setSelectedMessage(data);
 
             // Mark as seen (scoped per address)
@@ -185,7 +185,7 @@ export const useMail = () => {
     // Delete a message
     const deleteMessage = async (id) => {
         try {
-            await api.delete(`/messages/${id}`);
+            await api.delete(`/messages/${id}`, { params: { address: account?.address } });
             if (selectedMessage?.id === id) {
                 setSelectedMessage(null);
             }
