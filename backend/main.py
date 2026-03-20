@@ -13,7 +13,13 @@ from routes.payment_routes import router as payment_router
 
 # Rate limiter: uses client IP from X-Forwarded-For / CF-Connecting-IP
 def get_client_ip(request: Request) -> str:
-    """Extract real client IP, preferring Cloudflare/proxy headers."""
+    """Extract real client IP, preferring Cloudflare/proxy headers. Prevents spoofing."""
+    real_host = request.client.host if request.client else "unknown"
+    
+    # Only trust proxy headers if the request came from our local Nginx proxy
+    if real_host != "127.0.0.1":
+        return real_host
+        
     ip = request.headers.get("cf-connecting-ip")
     if not ip:
         fwd = request.headers.get("x-forwarded-for")
@@ -21,8 +27,8 @@ def get_client_ip(request: Request) -> str:
             ip = fwd.split(",")[0].strip()
     if not ip:
         ip = request.headers.get("x-real-ip")
-    if not ip and request.client:
-        ip = request.client.host
+    if not ip:
+        ip = real_host
     return ip or "unknown"
 
 limiter = Limiter(key_func=get_client_ip)

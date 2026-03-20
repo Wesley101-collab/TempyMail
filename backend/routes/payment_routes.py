@@ -346,8 +346,30 @@ async def set_webhook(req: WebhookRequest, authorization: Optional[str] = Header
     _require_premium(req.email)
     
     url = req.webhook_url.strip()
-    if url and not url.startswith(("http://", "https://")):
-        raise HTTPException(status_code=400, detail="Webhook URL must start with http:// or https://")
+    if url:
+        if not url.startswith(("http://", "https://")):
+            raise HTTPException(status_code=400, detail="Webhook URL must start with http:// or https://")
+        
+        # SSRF Protection
+        try:
+            from urllib.parse import urlparse
+            import socket
+            import ipaddress
+            
+            parsed = urlparse(url)
+            hostname = parsed.hostname
+            if not hostname:
+                raise ValueError("Invalid hostname")
+            
+            ip = socket.gethostbyname(hostname)
+            ip_obj = ipaddress.ip_address(ip)
+            
+            if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_multicast or ip_obj.is_reserved:
+                raise HTTPException(status_code=400, detail="Webhook URL cannot point to internal or private IP addresses")
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid webhook URL or could not resolve hostname")
     
     conn = get_connection()
     conn.execute(

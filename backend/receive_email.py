@@ -159,6 +159,10 @@ def store_email(raw_bytes: bytes):
     has_attachments = 0
     attachments = []
     
+    total_attachment_size = 0
+    MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024  # 10MB
+    MAX_TOTAL_SIZE = 30 * 1024 * 1024       # 30MB
+    
     if msg.is_multipart():
         for part in msg.walk():
             content_type = part.get_content_type()
@@ -166,15 +170,27 @@ def store_email(raw_bytes: bytes):
             
             if "attachment" in disposition or (content_type not in ("text/plain", "text/html", "multipart/alternative", "multipart/mixed", "multipart/related") and "attachment" not in disposition and part.get_filename()):
                 has_attachments = 1
-                filename = part.get_filename() or f"attachment_{len(attachments)+1}"
+                raw_filename = part.get_filename() or f"attachment_{len(attachments)+1}"
+                safe_base = os.path.basename(raw_filename)
+                import re
+                filename = re.sub(r'[\\/*?:"<>|\r\n]', "", safe_base)
+                if not filename:
+                    filename = f"attachment_{len(attachments)+1}"
                 try:
                     data = part.get_payload(decode=True)
                     if data:
+                        att_size = len(data)
+                        if att_size > MAX_ATTACHMENT_SIZE:
+                            continue  # Skip individual large attachments
+                        if total_attachment_size + att_size > MAX_TOTAL_SIZE:
+                            continue  # Skip if exceeding total email size
+                        
+                        total_attachment_size += att_size
                         attachments.append({
                             "id": str(uuid.uuid4()),
                             "filename": filename,
                             "content_type": content_type,
-                            "size": len(data),
+                            "size": att_size,
                             "data": data
                         })
                 except Exception:
